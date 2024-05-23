@@ -12,17 +12,17 @@ function opt = octave_opt_ap(w_start, w_end, num_points_freq_grid, gradient_ref,
     opt = xunc1;
 
     % plot stuff
-    g_opt1 = gr_ap_m_even(opt, w.*pi);
-    both1 = gradient_ref + g_opt1;
-    target1 = zeros(length(w),1) + sum(both1 .* err_weights) / sum(err_weights);
-    figure
-    plot(w, gradient_ref,
-        w, g_opt1,
-        w, both1,
-        w, err(both1, err_weights),
-        w, target1);
-    legend('grd ref', 'opt', 'ref+opt', 'err', 'target')
-    grid on
+    %g_opt1 = gr_ap_m_even(opt, w.*pi);
+    %both1 = gradient_ref + g_opt1;
+    %target1 = zeros(length(w),1) + sum(both1 .* err_weights) / sum(err_weights);
+    %figure
+    %plot(w, gradient_ref,
+    %    w, g_opt1,
+    %    w, both1,
+    %    w, err(both1, err_weights),
+    %    w, target1);
+    %legend('grd ref', 'opt', 'ref+opt', 'err', 'target')
+    %grid on
 
 endfunction
 
