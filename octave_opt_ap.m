@@ -1,11 +1,12 @@
 % 0 <= w <= 1
-function opt = octave_opt_ap(w_start, w_end, num_points_freq_grid, gradient_ref, err_weights, order, num_points_search_grid)
-    w = linspace(w_start, w_end, num_points_freq_grid);
-    gradient_ref = refit_points(gradient_ref, w_start, w_end, num_points_freq_grid)
-    err_weights = refit_points(err_weights, w_start, w_end, num_points_freq_grid)
+function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_search_grid, gradient_ref, err_weights)
+    % w_points = numel(gradient_ref)
+    w = linspace(w_start, w_end, w_points_internal);
+    gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal)
+    err_weights = refit_points(err_weights, w_start, w_end, w_points_internal)
     
     err_func = @(v) err_sum(err(gradient_ref + gr_ap_m_even(v, w.*pi), err_weights));
-    var_vals_start = search_full_grid(err_func, 6, 9)
+    var_vals_start = search_full_grid(err_func, order, divs_search_grid)
     e_start = err_func(var_vals_start)
     [xunc1,ressquared,eflag,outputu] = fminunc(err_func,var_vals_start);
     e_fmin = err_func(xunc1)

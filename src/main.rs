@@ -9,17 +9,19 @@ struct Args {
     #[arg(short, long)]
     name: String,
 
-    /// Number of times to greet
-    #[arg(short, long, default_value_t = 1)]
-    count: u8,
+    /// minimum frequency (normalised 0.0 to 1.0)
+    #[arg(short = 'i', long, default_value_t = 0.0)]
+    wmin: f32,
+
+    /// maximum frequency (normalised 0.0 to 1.0)
+    #[arg(short = 'm', long, default_value_t = 1.0)]
+    wmax: f32,
 }
 
 fn main() {
     let args = Args::parse();
 
-    for _ in 0..args.count {
-        println!("Hello {}!", args.name)
-    }
+    println!("Hello {} {}-{}!", args.name, args.wmin, args.wmax);
 
     let output = Command::new("octave")
         .arg("--eval")

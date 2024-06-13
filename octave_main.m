@@ -67,4 +67,4 @@ ph = unwrap(angle(fq));
 dw = w(2)-w(1);
 grd_ref = rm_jumps(grad(ph, dw));
 
-res = octave_opt_ap(w_start, w_end, w_points, grd_ref, err_weights, 6, 9)
+res = octave_opt_ap(w_start, w_end, w_points, 6, 9, grd_ref, err_weights)
