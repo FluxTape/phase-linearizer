@@ -2,8 +2,8 @@
 function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_search_grid, gradient_ref, err_weights)
     % w_points = numel(gradient_ref)
     w = linspace(w_start, w_end, w_points_internal);
-    gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal)
-    err_weights = refit_points(err_weights, w_start, w_end, w_points_internal)
+    gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal);
+    err_weights = refit_points(err_weights, w_start, w_end, w_points_internal);
     
     err_func = @(v) err_sum(err(gradient_ref + gr_ap_m_even(v, w.*pi), err_weights));
     var_vals_start = search_full_grid(err_func, order, divs_search_grid)
@@ -156,8 +156,8 @@ function var_vals = search_full_grid(func, order_half, num_grid_points)
     while (!done)
         err = func(positions2var_vals(positions));
         if (err <= best_err) 
-            best_err = err
-            positions
+            best_err = err;
+            positions;
             best_positions{end+1} = positions;
         endif
         if (positions(end) == pos_total)
@@ -166,5 +166,6 @@ function var_vals = search_full_grid(func, order_half, num_grid_points)
         positions = update_positions(positions);
     endwhile
     %best_positions
+    best_positions{end}
     var_vals = positions2var_vals(best_positions{end});
 endfunction
