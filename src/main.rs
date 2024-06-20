@@ -13,6 +13,29 @@ struct Args {
     /// maximum frequency (normalised 0.0 to 1.0)
     #[arg(short = 'm', long, default_value_t = 1.0)]
     wmax: f32,
+
+    /// number of internal sampling points
+    #[arg(short, long, default_value_t = 100)]
+    points: u32,
+
+    /// order of the linearization filter
+    #[arg(short, long, default_value_t = 6)]
+    order: u32,
+
+    /// number of search points freq grid
+    #[arg(short, long, default_value_t = 9)]
+    splits: u32,
+
+    /// whether the input data contains error weigths
+    #[arg(short, long, default_value_t = false)]
+    weights: bool,
+
+    /// path to file with input data
+    #[arg(short, long)]
+    file: Option<String>,
+
+    /// data
+    data: Vec<f64>,
 }
 
 fn main() {
@@ -33,7 +56,22 @@ fn main() {
     {
         let mut oct_stdin = octave.stdin.take().unwrap();
         let mut writer = BufWriter::new(&mut oct_stdin);
-        let tmp = "0.0 0.45 50 6 9 1 15 16 17 20 11 0.1 0.11 0.2 0.05 0.01";
+        let data_str = args
+            .data
+            .into_iter()
+            .map(|f| f.to_string())
+            .collect::<Vec<String>>()
+            .join(" ");
+        let tmp = format!(
+            "{wmin} {wmax} {wpoints} {order} {splits} {has_weights} {data}",
+            wmin = args.wmin,
+            wmax = args.wmax,
+            wpoints = args.points,
+            order = args.order,
+            splits = args.splits,
+            has_weights = if args.weights { 1 } else { 0 },
+            data = data_str
+        );
         let bytestring = tmp.as_bytes();
         writer.write_all(bytestring).unwrap();
     }
