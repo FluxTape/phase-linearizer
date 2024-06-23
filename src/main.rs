@@ -1,5 +1,5 @@
 use clap::Parser;
-use std::io::{BufWriter, Write};
+use std::io::{stdin, BufWriter, Write};
 use std::process::{Command, Stdio};
 
 /// Simple program to greet a person
@@ -56,12 +56,24 @@ fn main() {
     {
         let mut oct_stdin = octave.stdin.take().unwrap();
         let mut writer = BufWriter::new(&mut oct_stdin);
-        let data_str = args
-            .data
-            .into_iter()
-            .map(|f| f.to_string())
-            .collect::<Vec<String>>()
-            .join(" ");
+        let data_str = if args.data.is_empty() {
+            stdin()
+                .lines()
+                .map(|l| l.unwrap())
+                .collect::<Vec<String>>()
+                .iter()
+                .flat_map(|s| s.split(' '))
+                .map(|s| s.parse::<f64>().unwrap())
+                .map(|f| f.to_string())
+                .collect::<Vec<String>>()
+                .join(" ")
+        } else {
+            args.data
+                .into_iter()
+                .map(|f| f.to_string())
+                .collect::<Vec<String>>()
+                .join(" ")
+        };
         let tmp = format!(
             "{wmin} {wmax} {wpoints} {order} {splits} {has_weights} {data}",
             wmin = args.wmin,
