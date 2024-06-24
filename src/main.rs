@@ -1,6 +1,19 @@
-use clap::Parser;
+use clap::error::ErrorKind;
+use clap::{Error, Parser};
 use std::io::{stdin, BufWriter, Write};
 use std::process::{Command, Stdio};
+
+/*
+modes:
+gradient
+gradient + err weights
+transfer function
+transfer function + err weights
+transfer function + auto weights
+impulse response
+impulse response + err weigths
+impulse response + auto weights
+*/
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -38,15 +51,38 @@ struct Args {
     data: Vec<f64>,
 }
 
-fn main() {
+fn main() -> Result<(), Error> {
     let args = Args::parse();
 
-    println!("Hello {}-{}!", args.wmin, args.wmax);
+    let data_str = if args.data.is_empty() {
+        stdin()
+            .lines()
+            .collect::<Result<Vec<_>, _>>()?
+            .iter()
+            .flat_map(|s| s.split_whitespace())
+            .map(|s| {
+                dbg!(&s);
+                s
+            })
+            .map(|s| {
+                s.parse::<f64>()
+                    .map_err(|_| Error::new(ErrorKind::InvalidValue))
+            })
+            .map(|f| f.map(|g| g.to_string()))
+            .collect::<Result<Vec<_>, _>>()?
+            .join(" ")
+    } else {
+        args.data
+            .into_iter()
+            .map(|f| f.to_string())
+            .collect::<Vec<String>>()
+            .join(" ")
+    };
 
     let mut octave = Command::new("octave")
         .arg("--no-gui")
         .arg("--eval")
-        .arg("run ./octave_adapter.m")
+        .arg("run ./octave_adapter_gradient.m")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
@@ -56,24 +92,6 @@ fn main() {
     {
         let mut oct_stdin = octave.stdin.take().unwrap();
         let mut writer = BufWriter::new(&mut oct_stdin);
-        let data_str = if args.data.is_empty() {
-            stdin()
-                .lines()
-                .map(|l| l.unwrap())
-                .collect::<Vec<String>>()
-                .iter()
-                .flat_map(|s| s.split(' '))
-                .map(|s| s.parse::<f64>().unwrap())
-                .map(|f| f.to_string())
-                .collect::<Vec<String>>()
-                .join(" ")
-        } else {
-            args.data
-                .into_iter()
-                .map(|f| f.to_string())
-                .collect::<Vec<String>>()
-                .join(" ")
-        };
         let tmp = format!(
             "{wmin} {wmax} {wpoints} {order} {splits} {has_weights} {data}",
             wmin = args.wmin,
@@ -90,4 +108,5 @@ fn main() {
     println!("running octave...");
     let output = octave.wait_with_output().expect("wait failed");
     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+    Ok(())
 }
