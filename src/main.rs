@@ -40,16 +40,37 @@ impl Display for Weights {
     }
 }
 
+#[derive(clap::ValueEnum, Clone, Default, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+enum Mode {
+    /// gradient values
+    #[default]
+    Gradient,
+    /// numerator followed by denominator
+    TransferFunction,
+    // impulse response sample points
+    //ImpulseResponse,
+}
+
+impl Mode {
+    fn adapter_path(&self) -> &'static str {
+        match self {
+            Mode::Gradient => "./octave_adapter_gradient.m",
+            Mode::TransferFunction => "./octave_adapter_tf.m",
+        }
+    }
+}
+
 /// program for generating phase linearization filters
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
     /// minimum frequency (normalised 0.0 to 1.0)
-    #[arg(short = 'i', long, default_value_t = 0.0)]
+    #[arg(short = 'n', long, default_value_t = 0.0)]
     wmin: f32,
 
     /// maximum frequency (normalised 0.0 to 1.0)
-    #[arg(short = 'm', long, default_value_t = 1.0)]
+    #[arg(short = 'x', long, default_value_t = 1.0)]
     wmax: f32,
 
     /// number of internal sampling points
@@ -63,6 +84,10 @@ struct Args {
     /// number of search points freq grid
     #[arg(short, long, default_value_t = 9)]
     splits: u32,
+
+    /// type of input data
+    #[arg(short, long, value_enum, default_value_t)]
+    mode: Mode,
 
     /// whether the input data contains error weigths
     #[arg(short, long, value_enum, default_value_t)]
@@ -78,6 +103,12 @@ struct Args {
 
 fn main() -> Result<()> {
     let args = Args::parse();
+
+    if args.weights == Weights::Amplitude && args.mode == Mode::Gradient {
+        return Err(anyhow!(
+            "can't use weight type 'amplitude' with mode 'gradient'"
+        ));
+    }
 
     let data_in = if args.data.is_empty() {
         stdin()
@@ -108,7 +139,7 @@ fn main() -> Result<()> {
     let mut octave = Command::new("octave")
         .arg("--no-gui")
         .arg("--eval")
-        .arg("run ./octave_adapter_gradient.m")
+        .arg(format!("run {}", args.mode.adapter_path()))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
