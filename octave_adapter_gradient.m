@@ -1,3 +1,8 @@
+clear all
+close all
+pkg('load', 'optim');
+pkg('load', 'control');
+
 data_str   = fread( stdin, 'char' );
 data_str   = char( data_str.' );
 str_tokens = strsplit( data_str );
@@ -17,7 +22,9 @@ w_points_internal    = round(tokens(3))
 order                = round(tokens(4))
 divs_search_grid     = round(tokens(5))
 includes_err_weights = round(tokens(6))
-data_p = tokens(7:end);
+show_graph = (tokens(7) > 0)
+data_p = tokens(8:end);
+
 if (includes_err_weights > 0)
     w_points = idivide(numel(data_p), int32(2), "fix")
     gradient_ref = data_p(1:w_points)
@@ -33,6 +40,6 @@ else
 endif
 
 output_precision(16);
-opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_search_grid, gradient_ref, err_weights);
+opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_search_grid, gradient_ref, err_weights, show_graph);
 disp("final opt:");
 disp(opt');

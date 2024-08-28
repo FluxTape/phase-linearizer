@@ -1,5 +1,5 @@
 % 0 <= w <= 1
-function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_search_grid, gradient_ref, err_weights)
+function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_search_grid, gradient_ref, err_weights, show_plot)
     % w_points = numel(gradient_ref)
     w = linspace(w_start, w_end, w_points_internal);
     gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal);
@@ -12,18 +12,20 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_sear
     e_fmin = err_func(xunc1)
     opt = xunc1;
 
-    % plot stuff
-    %g_opt1 = gr_ap_m_even(opt, w.*pi);
-    %both1 = gradient_ref + g_opt1;
-    %target1 = zeros(length(w),1) + sum(both1 .* err_weights) / sum(err_weights);
-    %figure
-    %plot(w, gradient_ref,
-    %    w, g_opt1,
-    %    w, both1,
-    %    w, err(both1, err_weights),
-    %    w, target1);
-    %legend('grd ref', 'opt', 'ref+opt', 'err', 'target')
-    %grid on
+    if (show_plot)
+        g_opt1 = gr_ap_m_even(opt, w.*pi);
+        both1 = gradient_ref + g_opt1;
+        target1 = zeros(length(w),1) + sum(both1 .* err_weights) / sum(err_weights);
+        h = figure;
+        plot(w, gradient_ref,
+            w, g_opt1,
+            w, both1,
+            w, err(both1, err_weights),
+            w, target1);
+        legend('grd ref', 'opt', 'ref+opt', 'err', 'target')
+        grid on
+        waitfor(h)
+    endif
 
 endfunction
 

@@ -1,0 +1,105 @@
+clear all
+close all
+pkg('load', 'optim');
+pkg('load', 'control');
+
+function g = grad(v, delta)
+    n = numel(v);
+    d = [];
+    for i = 2:(n-1)
+        d(i) = v(i+1)-v(i-1);
+    endfor
+    % interpolate first and last point
+    d(1) = 2*d(2) - d(3);
+    d(n) = 2*d(n-1) - d(n-2);
+    g = -d./(2*delta);
+endfunction
+
+function g = rm_jumps(v)
+    n = numel(v);
+    last_good_idx = 1
+    i = 1;
+    need_fix = false;
+    for i = 1:n;
+        d = v(i) - v(last_good_idx);
+        if (abs(d) < 100) % -> i = next good idx
+            if (need_fix) % fix up entries
+                d_idx = i - last_good_idx;
+                for k = 1:d_idx;
+                    v(last_good_idx+k) = v(last_good_idx) + (d*k/d_idx)
+                endfor
+            endif
+            last_good_idx = i;
+            need_fix = false;
+        else
+            need_fix = true;
+        endif;
+    endfor
+    g = v;
+endfunction
+
+data_str   = fread( stdin, 'char' );
+data_str   = char( data_str.' );
+str_tokens = strsplit( data_str );
+tokens     = cellfun( @str2double, str_tokens );
+if isnan(tokens(end))
+    tokens = tokens(1:end-1);
+endif
+err_at = find(isnan(tokens));
+if !isempty(err_at)
+    disp("failed to parse input at index:");
+    err_at
+    return
+endif
+w_start              = tokens(1)
+w_end                = tokens(2)
+w_points_internal    = round(tokens(3))
+order                = round(tokens(4))
+divs_search_grid     = round(tokens(5))
+includes_err_weights = round(tokens(6))
+show_graph = (tokens(7) > 0)
+data_p = tokens(8:end);
+
+tf_order = idivide(numel(data_p), int32(2), "fix")
+tf_num = data_p(1:tf_order)
+tf_den = data_p(tf_order+1:end)
+if numel(tf_num) != numel(tf_den)
+    disp("transfer function numerator and denominator have mismatched length");
+    return
+endif
+h_z = tf(tf_num, tf_den, pi)
+w = linspace(w_start, w_end, w_points_internal);
+fq = h_z(w);
+
+
+ph = unwrap(angle(fq));
+dw = w(2)-w(1);
+grd_ref = rm_jumps(grad(ph, dw));
+
+if (includes_err_weights == 1)
+    w_points = idivide(numel(data_p), int32(2), "fix")
+    gradient_ref = data_p(1:w_points)
+    err_weights  = data_p(w_points+1:end)
+    if numel(gradient_ref) != numel(err_weights)
+        disp("gradient and err weights have mismatched length");
+        return
+    endif
+    disp("TODO!")
+    return
+elseif (includes_err_weights == 2)
+    err_weights_ = abs(fq);
+    for k = 1:numel(err_weights_)
+        err_weights(k) = err_weights_(k);
+    endfor
+    err_weights
+else
+    w_points = numel(grd_ref)
+    err_weights  = ones(1, w_points)
+endif
+
+grd_ref
+
+output_precision(16);
+opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_search_grid, grd_ref, err_weights, show_graph);
+disp("final opt:");
+disp(opt');

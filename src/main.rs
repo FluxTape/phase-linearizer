@@ -93,6 +93,10 @@ struct Args {
     #[arg(short, long, value_enum, default_value_t)]
     weights: Weights,
 
+    /// if added shows a graph of the results
+    #[arg(short, long, default_value_t = false)]
+    graph: bool,
+
     /// path to file with input data
     #[arg(short, long)]
     file: Option<String>,
@@ -107,6 +111,11 @@ fn main() -> Result<()> {
     if args.weights == Weights::Amplitude && args.mode == Mode::Gradient {
         return Err(anyhow!(
             "can't use weight type 'amplitude' with mode 'gradient'"
+        ));
+    }
+    if args.weights == Weights::Custom && args.mode == Mode::TransferFunction {
+        return Err(anyhow!(
+            "can't use weight type 'custom' with mode 'transfer-function'"
         ));
     }
 
@@ -137,11 +146,12 @@ fn main() -> Result<()> {
     let data_str = data_in.join(" ");
 
     let mut octave = Command::new("octave")
-        .arg("--no-gui")
+        //.arg("--no-gui")
         .arg("--eval")
         .arg(format!("run {}", args.mode.adapter_path()))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .spawn()
         .context("command failed to start")?;
 
@@ -150,15 +160,17 @@ fn main() -> Result<()> {
         let mut oct_stdin = octave.stdin.take().ok_or(anyhow!("failed to get stdin"))?;
         let mut writer = BufWriter::new(&mut oct_stdin);
         let tmp = format!(
-            "{wmin} {wmax} {wpoints} {order} {splits} {weights} {data}",
+            "{wmin} {wmax} {wpoints} {order} {splits} {weights} {graph} {data}",
             wmin = args.wmin,
             wmax = args.wmax,
             wpoints = args.points,
             order = args.order,
             splits = args.splits,
             weights = args.weights,
-            data = data_str
+            graph = if args.graph { 0 } else { 1 },
+            data = data_str,
         );
+        println!("octave args: {}", tmp);
         let bytestring = tmp.as_bytes();
         writer.write_all(bytestring)?;
     }
@@ -167,5 +179,10 @@ fn main() -> Result<()> {
         .wait_with_output()
         .context("failed to wait for output")?;
     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+    let octave_err = String::from_utf8_lossy(&output.stderr);
+    if !octave_err.is_empty() {
+        println!("stderr: {}", octave_err);
+    }
+
     Ok(())
 }
