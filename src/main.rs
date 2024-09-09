@@ -167,7 +167,7 @@ fn main() -> Result<()> {
             order = args.order,
             splits = args.splits,
             weights = args.weights,
-            graph = if args.graph { 0 } else { 1 },
+            graph = if args.graph { 1 } else { 0 },
             data = data_str,
         );
         println!("octave args: {}", tmp);
