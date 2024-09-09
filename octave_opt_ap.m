@@ -6,11 +6,25 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_sear
     err_weights = refit_points(err_weights, w_start, w_end, w_points_internal);
     
     err_func = @(v) err_sum(err(gradient_ref + gr_ap_m_even(v, w.*pi), err_weights));
-    var_vals_start = search_full_grid(err_func, order, divs_search_grid)
+    best_positions = search_full_grid(err_func, order, divs_search_grid);
+    var_vals_start = positions2var_vals(best_positions{end});
+    opt = var_vals_start;
+    found_solution = false;
+    n = numel(best_positions);
+    while (n>1 && !found_solution)
+        p = best_positions{n}
+        var_vals_start = positions2var_vals(p);
+        [xunc1,ressquared,eflag,outputu] = fminunc(err_func,var_vals_start);
+        if (sanity_check(xunc1))
+            opt = xunc1;
+            found_solution = true;
+        else
+            disp("result unstable, trying different start values")
+            n = n-1;
+        endif
+    endwhile
     e_start = err_func(var_vals_start)
-    [xunc1,ressquared,eflag,outputu] = fminunc(err_func,var_vals_start);
-    e_fmin = err_func(xunc1)
-    opt = xunc1;
+    e_fmin = err_func(opt)
 
     if (show_plot)
         g_opt1 = gr_ap_m_even(opt, w.*pi);
@@ -110,6 +124,31 @@ function th = gen_thetas(num_grid_points)
     th = p(2:end-1);
 endfunction
 
+function stable = sanity_check(var_vals)
+    stable = true;
+    n = numel(var_vals);
+    for i = 1:n
+        v = var_vals(i);
+        if (v < 0)
+            disp("val below 0")
+            stable = false;
+        endif
+        if (mod(i,2))
+            if (v >= 1)
+                r = v
+                disp("r too big")
+                stable = false;
+            endif
+        else
+            if (v > pi)
+                phi = v
+                disp("phi too big")
+                stable = false;
+            endif
+        endif
+    endfor
+endfunction
+
 function v = positions2var_vals(positions)
     order_half = sum(positions);
     num_pos = numel(positions);
@@ -147,7 +186,7 @@ function pos = update_positions(pos)
     endif
 endfunction
 
-function var_vals = search_full_grid(func, order_half, num_grid_points)
+function best_positions = search_full_grid(func, order_half, num_grid_points)
     thetas = gen_thetas(num_grid_points)
     done = false;
     positions = zeros(1, num_grid_points);
@@ -167,7 +206,7 @@ function var_vals = search_full_grid(func, order_half, num_grid_points)
         endif
         positions = update_positions(positions);
     endwhile
-    %best_positions
-    best_positions{end}
-    var_vals = positions2var_vals(best_positions{end});
+    best_positions
+    %best_positions{end}
+    %var_vals = positions2var_vals(best_positions{end});
 endfunction
