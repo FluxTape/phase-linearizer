@@ -21,7 +21,8 @@ function h_z = r_th_to_tf_d(r, theta)
     a = r*exp(1i * theta)
     ac = conj(a);
     b = real(a*ac)
-    d = min(real(a + ac), pi/2) % ?????
+    d = min(real(a + ac), 1.62) % ????? 1.62 > pi/2 but should be stable up to 1.999 for small imaginary part 
+    %b = real(a)^2 + imag(a)^2 
     %d = 2*real(a)
     h_z = (b - d*z + z*z)/(1 - d*z + b*z*z);
 endfunction
@@ -73,12 +74,13 @@ for i = 1:numel(rs)
     tf_aps{end+1} = tf_ap;
     full_tf *= tf_ap;
 endfor
-full_tf *= tf_pre;
+%full_tf *= tf_pre;
 bode(tf_aps{:})
 
 figure 2
 bode(full_tf)
 [mag, pha, w] = bode(full_tf);
+[mag_pre, pha_pre, w_pre] = bode(tf_pre, w);
 
 endfreq = 0.5
 for i = 1:numel(w)
@@ -93,5 +95,16 @@ pha_cut = pha(1:len);
 p = polyfit(w_cut, pha_cut, 1);
 lin = p(2) + w_cut * p(1);
 
+pha_pre_cut = pha_pre(1:len);
+p_pre = polyfit(w_cut, pha_pre_cut, 1);
+lin_pre = p_pre(2) + w_cut * p_pre(1);
+
 figure 3
-plot(w_cut, pha_cut, w_cut, lin)
+plot(w_cut, pha_cut, w_cut, lin, w_cut, pha_pre_cut, w_cut, lin_pre)
+
+figure 4
+[num_full, den_full] = tfdata(full_tf, 'v');
+grpdelay(num_full, den_full)
+figure 5
+%[num, den] = tfdata(tf_pre * full_tf, 'v');
+grpdelay(num, den)
