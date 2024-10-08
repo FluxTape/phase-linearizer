@@ -3,6 +3,7 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_sear
     % w_points = numel(gradient_ref)
     w = linspace(w_start, w_end, w_points_internal);
     gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal);
+    length_grd_ref = numel(gradient_ref)
     err_weights = refit_points(err_weights, w_start, w_end, w_points_internal);
     
     err_func = @(v) err_sum(err(gradient_ref + gr_ap_m_even(v, w.*pi), err_weights));
@@ -43,14 +44,14 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_sear
 
 endfunction
 
-function p_refit = refit_points(p, w_start, w_end, num_points_target)
-    x = linspace(w_start, w_end, numel(p));
-    p_refit = [];
-    for i = 1:num_points_target
-        xi = w_start + (w_end - w_start) * (i-1) / (num_points_target-1);
-        xi = min(xi, w_end);
-        p_refit(i) = interp1(x, p, xi);
+function p_refit = refit_points(v, w_start, w_end, num_points_target)
+    n = numel(v);
+    rp = [];
+    for x = 1:num_points_target
+        xq = x*n/num_points_target;
+        rp(x) = interp1(v, xq);
     endfor
+    p_refit = rp;
 endfunction
 
 % group delay allpass
@@ -206,7 +207,7 @@ function best_positions = search_full_grid(func, order_half, num_grid_points)
         endif
         positions = update_positions(positions);
     endwhile
-    best_positions
+    %best_positions
     %best_positions{end}
     %var_vals = positions2var_vals(best_positions{end});
 endfunction

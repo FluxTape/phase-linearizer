@@ -2,6 +2,7 @@ clear all
 close all
 pkg('load', 'optim');
 pkg('load', 'control');
+pkg('load', 'signal');
 
 function g = grad(v, delta)
     n = numel(v);
@@ -67,14 +68,48 @@ if numel(tf_num) != numel(tf_den)
     disp("transfer function numerator and denominator have mismatched length");
     return
 endif
-h_z = tf(tf_num, tf_den, pi)
+
 w = linspace(w_start, w_end, w_points_internal);
+h_z = tf(tf_num, tf_den, pi)
+[tf_num, tf_den] = tfdata(h_z, 'v'); % override tf_num, tf_den
 fq = h_z(w);
 
 
-ph = unwrap(angle(fq));
-dw = w(2)-w(1);
-grd_ref = rm_jumps(grad(ph, dw));
+%ph = unwrap(angle(fq));
+%dw = w(2)-w(1);
+%grd_ref = rm_jumps(grad(ph, dw));
+
+[grd_ref, wx] = grpdelay(tf_num, tf_den);
+wx /= pi;
+start_idx = 1;
+for k = 1:numel(wx);
+    if (wx(k) > w_start)
+        start_idx = k;
+        break
+    endif
+endfor
+end_idx = 1;
+for k = numel(wx):-1:1;
+    if (wx(k) < w_end)
+        end_idx = k;
+        break
+    endif
+endfor
+start_idx
+end_idx
+
+grd_ref = grd_ref(start_idx:end_idx)'
+
+maxgrp = 0;
+maxgrp_w = 0;
+for i = 1:numel(grd_ref) 
+    if (grd_ref(i) > maxgrp)
+        maxgrp = grd_ref(i);
+        maxgrp_w = wx(i);
+    endif
+endfor
+maxgrp
+maxgrp_w
 
 if (includes_err_weights == 1)
     w_points = idivide(numel(data_p), int32(2), "fix")
@@ -97,7 +132,7 @@ else
     err_weights  = ones(1, w_points)
 endif
 
-grd_ref
+%grd_ref
 
 output_precision(16);
 opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_search_grid, grd_ref, err_weights, show_graph);
