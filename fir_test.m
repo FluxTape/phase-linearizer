@@ -83,14 +83,20 @@ w_sym = linspace(-pi, pi, numel(fresp));
 numel(fresp)
 
 figure 1
-plot(w_sym, fresp)
+plot(w_sym, real(fresp), w_sym, imag(fresp))
 
 fir = ifft(fresp);
-fir = [fir(end/2:end) fir(1:end/2)];
+fir_n = numel(fir)
+fir = [fir((end+1)/2:end) fir(1:(end-1)/2)];
+fir_n2 = numel(fir)
 fir = fliplr(fir);
 %window = blackman(numel(fir))';
 window = hamming(numel(fir))';
 %window = hanning(numel(fir))';
+%window = kaiser(numel(fir))';
+%window = chebwin(numel(fir))';
+%window = ultrwin(numel(fir), -0.2, 2.1)';
+
 
 
 fir = fir .* window *2;
@@ -100,7 +106,7 @@ plot(w_sym, fir)
 
 figure 7
 freqz(fir, 1, numel(pha)*2);
-[h, w_n] = freqz(fir, 1, numel(pha)*2)
+[h, w_n] = freqz(fir, 1, numel(pha)*2);
 fir_pha = unwrap(angle(h))';
 fir_pha = fir_pha(1:end/2);
 figure 3
@@ -112,7 +118,7 @@ plot(w, fir_pha, w, pha_combined)
 figure 4
 p_ref = polyfit(w, pha_combined, 1);
 lin_ref = w * p_ref(1);
-err = (lin_ref - pha_combined).^2
+err = (lin_ref - pha_combined).^2;
 plot(w, err)
 
 
