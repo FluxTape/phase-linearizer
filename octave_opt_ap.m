@@ -1,5 +1,6 @@
 % 0 <= w <= 1
 function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_search_grid, gradient_ref, err_weights, show_plot)
+    greedy = true;
     % w_points = numel(gradient_ref)
     w = linspace(w_start, w_end, w_points_internal);
     gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal);
@@ -7,23 +8,44 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_sear
     err_weights = refit_points(err_weights, w_start, w_end, w_points_internal);
     
     err_func = @(v) err_sum(err(gradient_ref + gr_ap_m_even(v, w.*pi), err_weights));
-    best_positions = search_full_grid(err_func, order, divs_search_grid);
-    var_vals_start = positions2var_vals(best_positions{end});
-    opt = var_vals_start;
-    found_solution = false;
-    n = numel(best_positions);
-    while (n>1 && !found_solution)
-        p = best_positions{n}
-        var_vals_start = positions2var_vals(p);
-        [xunc1,ressquared,eflag,outputu] = fminunc(err_func,var_vals_start);
-        if (sanity_check(xunc1))
-            opt = xunc1;
-            found_solution = true;
-        else
-            disp("result unstable, trying different start values")
-            n = n-1;
-        endif
-    endwhile
+    if (greedy)
+        best_var_vals = search_full_grid_greedy(err_func, order, w_start, w_end)
+        var_vals_start = best_var_vals{end};
+        opt = var_vals_start;
+        found_solution = false;
+        n = numel(best_var_vals);
+        %while (n>1 && !found_solution)
+        %    var_vals_start = best_var_vals{n}
+        %    [xunc1,ressquared,eflag,outputu] = fminunc(err_func,var_vals_start);
+        %    if (sanity_check(xunc1))
+        %        opt = xunc1;
+        %        found_solution = true;
+        %    else
+        %        disp("result unstable, trying different start values")
+        %        n = n-1;
+        %    endif
+        %endwhile
+
+    else
+        best_positions = search_full_grid(err_func, order, divs_search_grid);
+        var_vals_start = positions2var_vals(best_positions{end});
+        opt = var_vals_start;
+        found_solution = false;
+        n = numel(best_positions);
+        while (n>1 && !found_solution)
+            p = best_positions{n}
+            var_vals_start = positions2var_vals(p);
+            [xunc1,ressquared,eflag,outputu] = fminunc(err_func,var_vals_start);
+            if (sanity_check(xunc1))
+                opt = xunc1;
+                found_solution = true;
+            else
+                disp("result unstable, trying different start values")
+                n = n-1;
+            endif
+        endwhile
+    endif
+    
     e_start = err_func(var_vals_start)
     e_fmin = err_func(opt)
 
@@ -134,13 +156,13 @@ function stable = sanity_check(var_vals)
             disp("val below 0")
             stable = false;
         endif
-        if (mod(i,2))
+        if (mod(i,2)) % r
             if (v >= 1)
                 r = v
                 disp("r too big")
                 stable = false;
             endif
-        else
+        else % theta
             if (v > pi)
                 phi = v
                 disp("phi too big")
@@ -168,6 +190,15 @@ function v = positions2var_vals(positions)
             endif
             pos = pos+2;
         endfor
+    endfor
+endfunction
+
+function v = thetas2var_vals(thetas)
+    default_r = 1/sqrt(2);
+    v = [];
+    for theta = thetas
+        v(end+1) = default_r;
+        v(end+1) = theta;
     endfor
 endfunction
 
@@ -210,4 +241,61 @@ function best_positions = search_full_grid(func, order_half, num_grid_points)
     %best_positions
     %best_positions{end}
     %var_vals = positions2var_vals(best_positions{end});
+endfunction
+
+function best_var_vals = search_full_grid_greedy(func, order_half, w_start, w_end)
+    num_variations = 10; % >=2
+    max_variation_theta = 0.4;  
+    max_variation_r = 0.3;     
+    num_search_points = 100;
+    w_range = w_end - w_start;
+    % theta range: 0, pi
+    thetas = [];
+    for no = 1:order_half
+        best_err = 9e9;
+        best_theta = 0;
+        for x = 1:num_search_points
+            theta = w_start + (x-1) * w_range / (num_search_points-1);
+            err = func(thetas2var_vals([thetas, theta]));
+            if (err <= best_err) 
+                best_theta = theta
+                best_err = err
+            endif
+        endfor
+        disp("------")
+        thetas = [thetas, best_theta];
+    endfor
+    assert(numel(thetas) == order_half)
+    greedy_var_vals = thetas2var_vals(thetas);
+    % create variations    
+    best_var_vals = cell();
+    for c = 1:num_variations
+        intensity = (c-1)/(num_variations-1);
+        
+        v_variation = [];
+        for idx = 1:order_half
+            v_variation(end+1) = (2*rand(1) - 0.5) * intensity * max_variation_r;
+            v_variation(end+1) = (2*rand(1) - 0.5) * intensity * max_variation_theta;
+        endfor
+        
+        var_vals = greedy_var_vals;
+        for i = 1:numel(var_vals)
+            if (mod(i,2)) % r
+                if (v_variation < 0)
+                    v_range = var_vals(i);
+                else
+                    v_range = 1-var_vals(i);
+                endif
+            else % theta
+                if (v_variation < 0)
+                    v_range = var_vals(i);
+                else
+                    v_range = pi-var_vals(i);
+                endif
+            endif
+            var_vals(i) += v_range*v_variation(i);
+        endfor
+        best_var_vals{end+1} = var_vals;
+    endfor
+    best_var_vals = flip(best_var_vals);
 endfunction
