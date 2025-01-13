@@ -26,8 +26,20 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_sear
                 n = n-1;
             endif
         endwhile
-    else
+    elseif (algo == 1)
         [opt, var_vals_start] = search_full_grid_random(err_func, order, 200)
+    elseif (algo == 2)
+        [opt, var_vals_start] = search_full_grid_random_bounded(err_func, order, 200)
+    else
+        var_min = zeros(1, order*2);
+        r_max = 1 - 1e-6;
+        var_max = [];
+        for i_ = 1:order
+            var_max(end+1) = r_max;
+            var_max(end+1) = pi;
+        endfor
+        var_vals_start = pso(err_func, order*2, var_min, var_max)
+        opt = var_vals_start;
     endif
     
     e_start = err_func(var_vals_start)
@@ -228,16 +240,50 @@ function best_positions = search_full_grid(func, order_half, num_grid_points)
 endfunction
 
 function [best_var_vals, var_vals_start] = search_full_grid_random(func, order_half, num_variations)
+    r_max = 1 - 1e-6;
     best_var_vals = [];
     best_err = 9e9;
     for i_ = 1:num_variations
         var_vals = [];
         for k_ = 1:order_half
-            var_vals(end+1) = rand(1); % r
+            var_vals(end+1) = rand(1)*r_max; % r
             var_vals(end+1) = rand(1)*pi; % theta 
         endfor
 
         [xunc1,ressquared,eflag,outputu] = fminunc(func,var_vals);
+        if (sanity_check(xunc1))
+            err = func(xunc1);
+            if (err < best_err)
+                best_err = err
+                best_var_vals = xunc1
+                var_vals_start = var_vals
+            endif
+        endif
+    endfor
+endfunction
+
+function [best_var_vals, var_vals_start] = search_full_grid_random_bounded(func, order_half, num_variations)
+    best_var_vals = [];
+    best_err = 9e9;
+    order = order_half*2;
+    r_max = 1 - 1e-6;
+    lb = zeros(1, order);
+    ub = [];
+    for k_ = 1:order_half
+        ub(end+1) = r_max; % r
+        ub(end+1) = pi; % theta 
+    endfor
+    ub
+    for i_ = 1:num_variations
+        var_vals = [];
+        for k_ = 1:order_half
+            var_vals(end+1) = rand(1)*r_max; % r
+            var_vals(end+1) = rand(1)*pi; % theta 
+        endfor
+
+        [xunc1, objf, cvg, outp] = fmincon(func,var_vals',[],[],[],[],lb,ub);
+        xunc1 = xunc1';
+
         if (sanity_check(xunc1))
             err = func(xunc1);
             if (err < best_err)
