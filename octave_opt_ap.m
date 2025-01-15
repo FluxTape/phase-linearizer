@@ -1,6 +1,5 @@
 % 0 <= w <= 1
-function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_search_grid, gradient_ref, err_weights, show_plot)
-    algo = 3;
+function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, gradient_ref, err_weights, show_plot)
     % w_points = numel(gradient_ref)
     w = linspace(w_start, w_end, w_points_internal);
     gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal);
@@ -9,6 +8,7 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_sear
     
     err_func = @(v) err_sum(err(gradient_ref + gr_ap_m_even(v, w.*pi), err_weights));
     if (algo == 0)
+        divs_search_grid = 15; % determined by experimentation, larger values too slow
         best_positions = search_full_grid(err_func, order, divs_search_grid);
         var_vals_start = positions2var_vals(best_positions{end});
         opt = var_vals_start;

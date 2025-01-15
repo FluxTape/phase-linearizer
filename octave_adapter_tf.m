@@ -56,7 +56,7 @@ w_start              = tokens(1)
 w_end                = tokens(2)
 w_points_internal    = round(tokens(3))
 order                = round(tokens(4))
-divs_search_grid     = round(tokens(5))
+algo                 = round(tokens(5))
 includes_err_weights = round(tokens(6))
 show_graph = (tokens(7) > 0)
 data_p = tokens(8:end);
@@ -135,6 +135,6 @@ endif
 %grd_ref
 
 output_precision(16);
-opt = octave_opt_ap(w_start, w_end, w_points_internal, order, divs_search_grid, grd_ref, err_weights, show_graph);
+opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, grd_ref, err_weights, show_graph);
 disp("final opt:");
 disp(opt');

@@ -7,7 +7,7 @@ function ret = pso(cf, nr_variables, var_min, var_max)
     % var_max                               % Upper bound of decision space
   
     %% Parameter Adjustment
-    max_iterations = 300;                   % Maximum iterations in PSO algorithm
+    max_iterations = 400;                   % Maximum iterations in PSO algorithm
     swarm_size = 500;                        % Swarm size (number of particles)
     w = 1;                                  % Inertia coefficient
     w_damp = 0.99;                          % damping of inertia coefficient, lower = faster damping

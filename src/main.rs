@@ -61,6 +61,31 @@ impl Mode {
     }
 }
 
+#[derive(clap::ValueEnum, Clone, Default, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+enum Algo {
+    /// basic Grid based starting values + fminunc
+    Grid,
+    /// random starting positions + fminunc
+    RandomUnc,
+    /// random starting positions + fmincon
+    RandomCon,
+    /// particle swarm optimization
+    #[default]
+    Pso,
+}
+
+impl Algo {
+    fn to_usize(&self) -> usize {
+        match self {
+            Algo::Grid => 0,
+            Algo::RandomUnc => 1,
+            Algo::RandomCon => 2,
+            Algo::Pso => 3,
+        }
+    }
+}
+
 /// program for generating phase linearization filters
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -81,13 +106,13 @@ struct Args {
     #[arg(short, long, default_value_t = 6)]
     order: u32,
 
-    /// number of search points freq grid
-    #[arg(short, long, default_value_t = 9)]
-    splits: u32,
-
     /// type of input data
     #[arg(short, long, value_enum, default_value_t)]
     mode: Mode,
+
+    /// algorithm to use
+    #[arg(short, long, value_enum, default_value_t)]
+    algo: Algo,
 
     /// whether the input data contains error weigths
     #[arg(short, long, value_enum, default_value_t)]
@@ -165,7 +190,7 @@ fn main() -> Result<()> {
             wmax = args.wmax,
             wpoints = args.points,
             order = args.order,
-            splits = args.splits,
+            splits = args.algo.to_usize(),
             weights = args.weights,
             graph = if args.graph { 1 } else { 0 },
             data = data_str,
