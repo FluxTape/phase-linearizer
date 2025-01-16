@@ -114,6 +114,10 @@ struct Args {
     #[arg(short, long, value_enum, default_value_t)]
     algo: Algo,
 
+    /// order of the linearization filter
+    #[arg(short, long, default_value_t = 300)]
+    iterations: u32,
+
     /// whether the input data contains error weigths
     #[arg(short, long, value_enum, default_value_t)]
     weights: Weights,
@@ -185,12 +189,13 @@ fn main() -> Result<()> {
         let mut oct_stdin = octave.stdin.take().ok_or(anyhow!("failed to get stdin"))?;
         let mut writer = BufWriter::new(&mut oct_stdin);
         let tmp = format!(
-            "{wmin} {wmax} {wpoints} {order} {splits} {weights} {graph} {data}",
+            "{wmin} {wmax} {wpoints} {order} {algo} {iterations} {weights} {graph} {data}",
             wmin = args.wmin,
             wmax = args.wmax,
             wpoints = args.points,
             order = args.order,
-            splits = args.algo.to_usize(),
+            algo = args.algo.to_usize(),
+            iterations = args.iterations,
             weights = args.weights,
             graph = if args.graph { 1 } else { 0 },
             data = data_str,

@@ -68,6 +68,6 @@ dw = w(2)-w(1);
 grd_ref = rm_jumps(grad(ph, dw))
 
 output_precision(16);
-opt = octave_opt_ap(w_start, w_end, w_points, 6, 0, grd_ref, err_weights, 1)
+opt = octave_opt_ap(w_start, w_end, w_points, 6, 0, 0, grd_ref, err_weights, 1)
 disp("final opt:");
 disp(opt');

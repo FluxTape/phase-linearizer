@@ -57,9 +57,10 @@ w_end                = tokens(2)
 w_points_internal    = round(tokens(3))
 order                = round(tokens(4))
 algo                 = round(tokens(5))
-includes_err_weights = round(tokens(6))
-show_graph = (tokens(7) > 0)
-data_p = tokens(8:end);
+iterations           = round(tokens(6))
+includes_err_weights = round(tokens(7))
+show_graph = (tokens(8 > 0))
+data_p = tokens(9:end);
 
 tf_order = idivide(numel(data_p), int32(2), "fix")
 tf_num = data_p(1:tf_order)
@@ -135,6 +136,6 @@ endif
 %grd_ref
 
 output_precision(16);
-opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, grd_ref, err_weights, show_graph);
+opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, grd_ref, err_weights, show_graph);
 disp("final opt:");
 disp(opt');

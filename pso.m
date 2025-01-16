@@ -1,4 +1,4 @@
-function ret = pso(cf, nr_variables, var_min, var_max)
+function ret = pso(cf, nr_variables, var_min, var_max, max_iterations)
   
     %% Problem Definition
     % nr_variables                          % Number of variables unknown (part of the decision)
@@ -7,8 +7,7 @@ function ret = pso(cf, nr_variables, var_min, var_max)
     % var_max                               % Upper bound of decision space
   
     %% Parameter Adjustment
-    max_iterations = 400;                   % Maximum iterations in PSO algorithm
-    swarm_size = 500;                        % Swarm size (number of particles)
+    swarm_size = 500;                       % Swarm size (number of particles)
     w = 1;                                  % Inertia coefficient
     w_damp = 0.99;                          % damping of inertia coefficient, lower = faster damping
     c1 = 1;                                 % Cognitive acceleration coefficient (c1 + c2 = 4)

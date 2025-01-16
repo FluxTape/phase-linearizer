@@ -1,5 +1,5 @@
 % 0 <= w <= 1
-function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, gradient_ref, err_weights, show_plot)
+function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, gradient_ref, err_weights, show_plot)
     % w_points = numel(gradient_ref)
     w = linspace(w_start, w_end, w_points_internal);
     gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal);
@@ -27,9 +27,9 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, gra
             endif
         endwhile
     elseif (algo == 1)
-        [opt, var_vals_start] = search_full_grid_random(err_func, order, 300)
+        [opt, var_vals_start] = search_full_grid_random(err_func, order, iterations)
     elseif (algo == 2)
-        [opt, var_vals_start] = search_full_grid_random_bounded(err_func, order, 300)
+        [opt, var_vals_start] = search_full_grid_random_bounded(err_func, order, iterations)
     else
         var_min = zeros(1, order*2);
         r_max = 1 - 1e-6;10
@@ -38,7 +38,7 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, gra
             var_max(end+1) = r_max;
             var_max(end+1) = pi;
         endfor
-        var_vals_start = pso(err_func, order*2, var_min, var_max)
+        var_vals_start = pso(err_func, order*2, var_min, var_max, iterations)
         opt = var_vals_start;
     endif
     
