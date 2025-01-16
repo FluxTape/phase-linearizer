@@ -7,7 +7,10 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, ite
     err_weights = refit_points(err_weights, w_start, w_end, w_points_internal);
     
     err_func = @(v) err_sum(err(gradient_ref + gr_ap_m_even(v, w.*pi), err_weights));
-    if (algo == 0)
+    algoname = "";
+    switch (algo)
+    case 0
+        algoname = "grid"
         divs_search_grid = 15; % determined by experimentation, larger values too slow
         best_positions = search_full_grid(err_func, order, divs_search_grid);
         var_vals_start = positions2var_vals(best_positions{end});
@@ -26,11 +29,14 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, ite
                 n = n-1;
             endif
         endwhile
-    elseif (algo == 1)
+    case 1
+        algoname = "random-unc"
         [opt, var_vals_start] = search_full_grid_random(err_func, order, iterations)
-    elseif (algo == 2)
+    case 2
+        algoname = "random-con"
         [opt, var_vals_start] = search_full_grid_random_bounded(err_func, order, iterations)
-    else
+    otherwise
+        algoname = "pso"
         var_min = zeros(1, order*2);
         r_max = 1 - 1e-6;10
         var_max = [];
@@ -40,7 +46,7 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, ite
         endfor
         var_vals_start = pso(err_func, order*2, var_min, var_max, iterations)
         opt = var_vals_start;
-    endif
+    endswitch
     
     e_start = err_func(var_vals_start)
     e_fmin = err_func(opt)
@@ -56,6 +62,8 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, ite
             w, err(both1, err_weights),
             w, target1);
         legend('grd ref', 'opt', 'ref+opt', 'err', 'target')
+        title_txt = sprintf("order=%d  algo=%s  iterations=%d", order, algoname, iterations)
+        title(title_txt)
         grid on
         waitfor(h)
     endif
@@ -240,8 +248,9 @@ function best_positions = search_full_grid(func, order_half, num_grid_points)
 endfunction
 
 function [best_var_vals, var_vals_start] = search_full_grid_random(func, order_half, num_variations)
+    var_vals_start = zeros(1, order_half*2);
     r_max = 1 - 1e-6;
-    best_var_vals = [];
+    best_var_vals = var_vals_start;
     best_err = 9e9;
     for i_ = 1:num_variations
         var_vals = [];
