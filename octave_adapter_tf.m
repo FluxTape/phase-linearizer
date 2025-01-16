@@ -59,7 +59,7 @@ order                = round(tokens(4))
 algo                 = round(tokens(5))
 iterations           = round(tokens(6))
 includes_err_weights = round(tokens(7))
-show_graph = (tokens(8 > 0))
+show_graph = (tokens(8) > 0)
 data_p = tokens(9:end);
 
 tf_order = idivide(numel(data_p), int32(2), "fix")
