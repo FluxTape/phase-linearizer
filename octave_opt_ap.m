@@ -1,5 +1,5 @@
 % 0 <= w <= 1
-function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, gradient_ref, err_weights, show_plot)
+function [opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, gradient_ref, err_weights, show_plot)
     % w_points = numel(gradient_ref)
     w = linspace(w_start, w_end, w_points_internal);
     gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal);
@@ -7,10 +7,10 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, ite
     err_weights = refit_points(err_weights, w_start, w_end, w_points_internal);
     
     err_func = @(v) err_sum(err(gradient_ref + gr_ap_m_even(v, w.*pi), err_weights));
-    algoname = "";
+    title_txt = "";
     switch (algo)
     case 0
-        algoname = "grid"
+        title_txt = sprintf("order=%d  algo=grid", order);
         divs_search_grid = 15; % determined by experimentation, larger values too slow
         best_positions = search_full_grid(err_func, order, divs_search_grid);
         var_vals_start = positions2var_vals(best_positions{end});
@@ -30,13 +30,13 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, ite
             endif
         endwhile
     case 1
-        algoname = "random-unc"
+        title_txt = sprintf("order=%d  algo=random-unc  iterations=%d", order, iterations);
         [opt, var_vals_start] = search_full_grid_random(err_func, order, iterations)
     case 2
-        algoname = "random-con"
+        title_txt = sprintf("order=%d  algo=random-con  iterations=%d", order, iterations);
         [opt, var_vals_start] = search_full_grid_random_bounded(err_func, order, iterations)
     otherwise
-        algoname = "pso"
+        title_txt = sprintf("order=%d  algo=pso  iterations=%d", order, iterations);
         var_min = zeros(1, order*2);
         r_max = 1 - 1e-6;10
         var_max = [];
@@ -62,7 +62,6 @@ function opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, ite
             w, err(both1, err_weights),
             w, target1);
         legend('grd ref', 'opt', 'ref+opt', 'err', 'target')
-        title_txt = sprintf("order=%d  algo=%s  iterations=%d", order, algoname, iterations)
         title(title_txt)
         grid on
         waitfor(h)
