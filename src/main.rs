@@ -17,17 +17,28 @@ impulse response + err weigths
 impulse response + auto weights
 */
 
+fn range_0_to_1(s: &str) -> Result<f64, String> {
+    let val = s.parse::<f64>().map_err(|e| e.to_string())?;
+    if val < 0.0 {
+        return Err(format!("{} is less than 0.0", val));
+    }
+    if val > 1.0 {
+        return Err(format!("{} is greater than 1.0", val));
+    }
+    Ok(val)
+}
+
 /// program for generating phase linearization filters
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
     /// minimum frequency (normalised 0.0 to 1.0)
-    #[arg(short = 'n', long, default_value_t = 0.0)]
-    wmin: f32,
+    #[arg(short = 'n', long, default_value_t = 0.0, value_parser=range_0_to_1, allow_hyphen_values=true)]
+    wmin: f64,
 
     /// maximum frequency (normalised 0.0 to 1.0)
-    #[arg(short = 'x', long, default_value_t = 1.0)]
-    wmax: f32,
+    #[arg(short = 'x', long, default_value_t = 1.0, value_parser=range_0_to_1, allow_hyphen_values=true)]
+    wmax: f64,
 
     /// number of internal sampling points
     #[arg(short, long, default_value_t = 100)]
@@ -197,6 +208,14 @@ impl Mode {
         }
         Ok(data)
     }
+
+    fn weights_mode(&self) -> usize {
+        match self {
+            Mode::Gradient { weights, .. } => weights.to_usize(),
+            Mode::TransferFunction { weights, .. } => weights.to_usize(),
+            Mode::ImpulseResponse { weights, .. } => weights.to_usize(),
+        }
+    }
 }
 
 fn main() -> Result<()> {
@@ -211,14 +230,14 @@ fn main() -> Result<()> {
             .inspect(|s| {
                 dbg!(s);
             })
-            .map(|s| s.parse::<f64>())
+            .map(str::parse::<f64>)
             .map(|f| f.map(|g| g.to_string()))
             .collect::<Result<Vec<_>, _>>()?
     } else {
         args.mode
             .get_input()?
             .iter()
-            .map(|f| f.to_string())
+            .map(f64::to_string)
             .collect::<Vec<String>>()
     };
     /*if args.weights == Weights::Custom && data_in.len() & 1 == 1 {
@@ -251,7 +270,7 @@ fn main() -> Result<()> {
             order = args.order,
             algo = args.algo.to_usize(),
             iterations = args.iterations,
-            weights = 0, //TODO
+            weights = args.mode.weights_mode(), //TODO add field for number of weight values and number of data values
             graph = if args.graph { 1 } else { 0 },
             data = data_str,
         );
@@ -263,10 +282,39 @@ fn main() -> Result<()> {
     let output = octave
         .wait_with_output()
         .context("failed to wait for output")?;
-    println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+    let output_string = String::from_utf8_lossy(&output.stdout);
+    println!("stdout: {}", &output_string);
     let octave_err = String::from_utf8_lossy(&output.stderr);
     if !octave_err.is_empty() {
         println!("stderr: {}", octave_err);
+    }
+    let mut res = output_string
+        .lines()
+        .skip_while(|&s| !s.contains("final opt"))
+        .skip(1) // skip "final opt" string
+        .map(str::trim_start)
+        .map(str::parse::<f64>)
+        .collect::<Result<Vec<_>, _>>()
+        .expect("failed to parse octave output");
+    let e_min = res
+        .pop()
+        .expect("res should always contain at least one element");
+    if res.len() & 1 == 1 {
+        // is odd
+        return Err(anyhow!("result parsing error: length is not even"));
+    }
+
+    //dbg!(&res);
+    let mut res_iter = res.into_iter();
+    let mut res_tuple = Vec::new();
+    while let (Some(r), Some(theta)) = (res_iter.next(), res_iter.next()) {
+        res_tuple.push((r, theta));
+    }
+    res_tuple.sort_by(|(_r1, t1), (_r2, t2)| t1.partial_cmp(t2).expect("should not contain NANs"));
+
+    println!("minimum error: {}", e_min);
+    for (r, theta) in res_tuple {
+        println!("r: {} theta: {}", r, theta);
     }
 
     Ok(())

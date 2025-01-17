@@ -136,6 +136,6 @@ endif
 %grd_ref
 
 output_precision(16);
-opt = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, grd_ref, err_weights, show_graph);
+[opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, grd_ref, err_weights, show_graph);
 disp("final opt:");
-disp(opt');
+disp([opt e_min]');

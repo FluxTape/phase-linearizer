@@ -50,6 +50,7 @@ function [opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, 
     
     e_start = err_func(var_vals_start)
     e_fmin = err_func(opt)
+    e_min = e_fmin;
 
     if (show_plot)
         g_opt1 = gr_ap_m_even(opt, w.*pi);
@@ -60,8 +61,9 @@ function [opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, 
             w, g_opt1,
             w, both1,
             w, err(both1, err_weights),
-            w, target1);
-        legend('grd ref', 'opt', 'ref+opt', 'err', 'target')
+            w, target1,
+            w, err_weights)
+        legend('grd ref', 'opt', 'ref+opt', 'err', 'target', 'err weights')
         title(title_txt)
         grid on
         waitfor(h)
