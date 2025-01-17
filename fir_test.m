@@ -87,7 +87,8 @@ plot(w_sym, real(fresp), w_sym, imag(fresp))
 
 fir = ifft(fresp);
 fir_n = numel(fir)
-fir = [fir((end+1)/2:end) fir(1:(end-1)/2)];
+%fir = [fir((end+1)/2:end) fir(1:(end-1)/2)];
+fir = ifftshift(fir);
 fir_n2 = numel(fir)
 fir = fliplr(fir);
 %window = blackman(numel(fir))';
