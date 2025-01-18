@@ -250,7 +250,7 @@ endfunction
 
 function [best_var_vals, var_vals_start] = search_full_grid_random(func, order_half, num_variations)
     var_vals_start = zeros(1, order_half*2);
-    r_max = 1 - 1e-6;
+    r_max = 1 - 1e-3;
     best_var_vals = var_vals_start;
     best_err = 9e9;
     for i_ = 1:num_variations
