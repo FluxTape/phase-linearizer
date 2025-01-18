@@ -75,7 +75,7 @@ function p_refit = refit_points(v, w_start, w_end, num_points_target)
     n = numel(v);
     rp = [];
     for x = 1:num_points_target
-        xq = x*n/num_points_target;
+        xq = (x-1)*(n-1)/(num_points_target-1) + 1;
         rp(x) = interp1(v, xq);
     endfor
     p_refit = rp;

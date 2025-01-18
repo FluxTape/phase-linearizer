@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Context, Result};
-use clap::Parser;
+use clap::{Args, Parser};
 use serde::Serialize;
 //use std::fs;
 use std::io::{stdin, BufWriter, Write};
@@ -31,13 +31,13 @@ fn range_0_to_1(s: &str) -> Result<f64, String> {
 /// program for generating phase linearization filters
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
-struct Args {
+struct Cli {
     /// minimum frequency (normalised 0.0 to 1.0)
-    #[arg(short = 'n', long, default_value_t = 0.0, value_parser=range_0_to_1, allow_hyphen_values=true)]
+    #[arg(short = 'n', long, default_value_t = 0.0, value_parser=range_0_to_1, allow_negative_numbers=true)]
     wmin: f64,
 
     /// maximum frequency (normalised 0.0 to 1.0)
-    #[arg(short = 'x', long, default_value_t = 1.0, value_parser=range_0_to_1, allow_hyphen_values=true)]
+    #[arg(short = 'x', long, default_value_t = 1.0, value_parser=range_0_to_1, allow_negative_numbers=true)]
     wmax: f64,
 
     /// number of internal sampling points
@@ -65,44 +65,57 @@ struct Args {
     mode: Mode,
 }
 
-#[derive(clap::ValueEnum, Clone, Default, Debug, PartialEq, Serialize)]
-#[serde(rename_all = "kebab-case")]
-enum WeightsFCA {
-    /// flat error weights
-    Flat,
-    /// custom user provided error weights
-    Custom,
+#[derive(Args, Clone, Default, Debug, PartialEq, Serialize)]
+#[group(multiple = false)]
+struct WeightsFCA {
+    #[clap(long, default_value_t = false)]
+    /// flat error weights (default)
+    flat: bool,
     /// error weights based on amplitude
-    #[default]
-    Amplitude,
+    #[clap(long, default_value_t = false, visible_alias = "amp")]
+    amplitude: bool,
+    /// custom user provided error weights
+    #[clap(long, value_parser, num_args = 1.., value_delimiter = ' ')]
+    custom: Option<Vec<f64>>,
 }
 
 impl WeightsFCA {
     fn to_usize(&self) -> usize {
-        match self {
-            WeightsFCA::Flat => 0,
-            WeightsFCA::Custom => 1,
-            WeightsFCA::Amplitude => 2,
+        match (self.flat, self.amplitude, self.custom.is_some()) {
+            (true, _, _) => 0,
+            (_, true, _) => 1,
+            (_, _, true) => 2,
+            _ => 0,
         }
+    }
+
+    fn custom_weights(&self) -> Option<&Vec<f64>> {
+        self.custom.as_ref()
     }
 }
 
-#[derive(clap::ValueEnum, Clone, Default, Debug, PartialEq, Serialize)]
-#[serde(rename_all = "kebab-case")]
-enum WeightsFC {
-    /// flat error weights
-    #[default]
-    Flat,
+#[derive(Args, Clone, Default, Debug, PartialEq, Serialize)]
+#[group(multiple = false)]
+struct WeightsFC {
+    #[clap(long, default_value_t = false)]
+    /// flat error weights (default)
+    flat: bool,
     /// custom user provided error weights
-    Custom,
+    #[clap(long, value_parser, num_args = 1.., value_delimiter = ' ')]
+    custom: Option<Vec<f64>>,
 }
 
 impl WeightsFC {
     fn to_usize(&self) -> usize {
-        match self {
-            WeightsFC::Flat => 0,
-            WeightsFC::Custom => 1,
+        match (self.flat, self.custom.is_some()) {
+            (true, _) => 0,
+            (_, true) => 2,
+            _ => 0,
         }
+    }
+
+    fn custom_weights(&self) -> Option<&Vec<f64>> {
+        self.custom.as_ref()
     }
 }
 
@@ -138,7 +151,7 @@ enum Mode {
     #[clap(visible_alias = "grd")]
     Gradient {
         /// whether the input data contains error weigths
-        #[arg(short, long, value_enum, default_value_t)]
+        #[command(flatten)]
         weights: WeightsFC,
 
         /// path to file with input data
@@ -152,21 +165,21 @@ enum Mode {
     #[clap(visible_alias = "tf")]
     TransferFunction {
         /// whether the input data contains error weigths
-        #[arg(short, long, value_enum, default_value_t)]
+        #[command(flatten)]
         weights: WeightsFCA,
 
-        /// path to file with input data
-        #[arg(short, long)]
-        file: Option<String>,
+        #[clap(long, value_parser, num_args = 1.., value_delimiter = ' ', allow_negative_numbers=true, required=true, visible_alias="num")]
+        numerator: Vec<f64>,
 
-        /// data
-        data: Vec<f64>,
+        #[clap(long, value_parser, num_args = 1.., value_delimiter = ' ', allow_negative_numbers=true, required=true, visible_alias="den")]
+        denominator: Vec<f64>,
     },
     /// impulse response sample points
     #[clap(visible_alias = "imp")]
     ImpulseResponse {
         /// whether the input data contains error weigths
-        #[arg(short, long, value_enum, default_value_t)]
+        //#[arg(short, long, value_enum, default_value_t)]
+        #[command(flatten)]
         weights: WeightsFCA,
 
         /// path to file with input data
@@ -188,25 +201,25 @@ impl Mode {
     }
 
     fn has_input(&self) -> bool {
-        let (file, data) = match self {
-            Mode::Gradient { file, data, .. } => (file, data),
-            Mode::TransferFunction { file, data, .. } => (file, data),
-            Mode::ImpulseResponse { file, data, .. } => (file, data),
-        };
-        file.is_some() || !data.is_empty()
+        // TODO fix this
+        match self {
+            Mode::Gradient { file, data, .. } => file.is_some() || !data.is_empty(),
+            Mode::TransferFunction { .. } => true,
+            Mode::ImpulseResponse { file, data, .. } => file.is_some() || !data.is_empty(),
+        }
     }
 
-    fn get_input(&self) -> Result<&Vec<f64>> {
-        let (file, data) = match self {
-            Mode::Gradient { file, data, .. } => (file, data),
-            Mode::TransferFunction { file, data, .. } => (file, data),
-            Mode::ImpulseResponse { file, data, .. } => (file, data),
-        };
-        // TODO: implement file input. It may be best to read and parse the file within octave
-        if file.is_some() {
-            todo!()
+    fn get_input<'a>(&'a self) -> Box<dyn Iterator<Item = &'a f64> + 'a> {
+        match self {
+            Mode::Gradient { data, .. } => Box::new(data.iter()),
+            Mode::TransferFunction {
+                numerator,
+                denominator,
+                ..
+            } => Box::new(numerator.iter().chain(denominator.iter())),
+            Mode::ImpulseResponse { data, .. } => Box::new(data.iter()),
         }
-        Ok(data)
+        // TODO: implement file input. It may be best to read and parse the file within octave
     }
 
     fn weights_mode(&self) -> usize {
@@ -216,10 +229,18 @@ impl Mode {
             Mode::ImpulseResponse { weights, .. } => weights.to_usize(),
         }
     }
+
+    fn custom_weights(&self) -> Option<&Vec<f64>> {
+        match self {
+            Mode::Gradient { weights, .. } => weights.custom_weights(),
+            Mode::TransferFunction { weights, .. } => weights.custom_weights(),
+            Mode::ImpulseResponse { weights, .. } => weights.custom_weights(),
+        }
+    }
 }
 
 fn main() -> Result<()> {
-    let args = Args::parse();
+    let args = Cli::parse();
 
     let data_in = if !args.mode.has_input() {
         stdin()
@@ -235,8 +256,7 @@ fn main() -> Result<()> {
             .collect::<Result<Vec<_>, _>>()?
     } else {
         args.mode
-            .get_input()?
-            .iter()
+            .get_input()
             .map(f64::to_string)
             .collect::<Vec<String>>()
     };
@@ -246,7 +266,23 @@ fn main() -> Result<()> {
             data_in.len()
         ));
     }*/
-    let data_str = data_in.join(" ");
+    let weights = if args.mode.weights_mode() == 2 {
+        let custom_weights = args
+            .mode
+            .custom_weights()
+            .expect("should be some since custom mode is set");
+        assert!(
+            !custom_weights.is_empty(),
+            "custom weights should contain at least one element"
+        );
+        debug_assert!(
+            !custom_weights.iter().any(|&f| f < 0.0),
+            "it should not be possible for custom weights to contain negative values"
+        );
+        custom_weights
+    } else {
+        &Vec::<f64>::new()
+    };
 
     let mut octave = Command::new("octave")
         //.arg("--no-gui")
@@ -263,16 +299,19 @@ fn main() -> Result<()> {
         let mut oct_stdin = octave.stdin.take().ok_or(anyhow!("failed to get stdin"))?;
         let mut writer = BufWriter::new(&mut oct_stdin);
         let tmp = format!(
-            "{wmin} {wmax} {wpoints} {order} {algo} {iterations} {weights} {graph} {data}",
+            "{wmin} {wmax} {wpoints} {order} {graph} {algo} {iterations} {weights_mode} {length_data} {length_weights} {data} {weights}",
             wmin = args.wmin,
             wmax = args.wmax,
             wpoints = args.points,
             order = args.order,
+            graph = if args.graph { 1 } else { 0 },
             algo = args.algo.to_usize(),
             iterations = args.iterations,
-            weights = args.mode.weights_mode(), //TODO add field for number of weight values and number of data values
-            graph = if args.graph { 1 } else { 0 },
-            data = data_str,
+            weights_mode = args.mode.weights_mode(),
+            length_data = data_in.len(),
+            length_weights = weights.len(),
+            data = data_in.join(" "),
+            weights = weights.iter().map(f64::to_string).collect::<Vec<String>>().join(" ")
         );
         println!("octave args: {}", tmp);
         let bytestring = tmp.as_bytes();
@@ -314,7 +353,7 @@ fn main() -> Result<()> {
 
     println!("minimum error: {}", e_min);
     for (r, theta) in res_tuple {
-        println!("r: {} theta: {}", r, theta);
+        println!("r: {:.16} theta: {:.16}", r, theta);
     }
 
     Ok(())

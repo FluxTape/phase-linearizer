@@ -56,11 +56,18 @@ w_start              = tokens(1)
 w_end                = tokens(2)
 w_points_internal    = round(tokens(3))
 order                = round(tokens(4))
-algo                 = round(tokens(5))
-iterations           = round(tokens(6))
-includes_err_weights = round(tokens(7))
-show_graph = (tokens(8) > 0)
-data_p = tokens(9:end);
+show_graph           = (tokens(5) > 0)
+algo                 = round(tokens(6))
+iterations           = round(tokens(7))
+includes_err_weights = round(tokens(8))
+length_data          = round(tokens(9))
+length_weights       = round(tokens(10))
+data_start = 11
+data_end = data_start+length_data-1
+weights_start = data_end+1
+weights_end = weights_start+length_weights-1
+data_p = tokens(data_start:data_end);
+weights_p = tokens(weights_start:weights_end);
 
 tf_order = idivide(numel(data_p), int32(2), "fix")
 tf_num = data_p(1:tf_order)
@@ -99,7 +106,8 @@ endfor
 start_idx
 end_idx
 
-grd_ref = grd_ref(start_idx:end_idx)'
+grd_ref = grd_ref(start_idx:end_idx)';
+n_grd = numel(grd_ref)
 
 maxgrp = 0;
 maxgrp_w = 0;
@@ -112,17 +120,9 @@ endfor
 maxgrp
 maxgrp_w
 
-if (includes_err_weights == 1)
-    w_points = idivide(numel(data_p), int32(2), "fix")
-    gradient_ref = data_p(1:w_points)
-    err_weights  = data_p(w_points+1:end)
-    if numel(gradient_ref) != numel(err_weights)
-        disp("gradient and err weights have mismatched length");
-        return
-    endif
-    disp("TODO!")
-    return
-elseif (includes_err_weights == 2)
+if (includes_err_weights == 2)
+    err_weights  = weights_p;
+elseif (includes_err_weights == 1)
     err_weights_ = abs(fq);
     for k = 1:numel(err_weights_)
         err_weights(k) = err_weights_(k);
