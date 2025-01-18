@@ -24,20 +24,22 @@ show_graph           = (tokens(5) > 0)
 algo                 = round(tokens(6))
 iterations           = round(tokens(7))
 includes_err_weights = round(tokens(8))
-data_p = tokens(9:end);
+length_data          = round(tokens(9))
+length_weights       = round(tokens(10))
+data_start = 11
+data_end = data_start+length_data-1
+weights_start = data_end+1
+weights_end = weights_start+length_weights-1
+data_p = tokens(data_start:data_end);
+weights_p = tokens(weights_start:weights_end);
 
+w_points = numel(data_p)
 if (includes_err_weights > 0)
-    w_points = idivide(numel(data_p), int32(2), "fix")
-    gradient_ref = data_p(1:w_points)
-    err_weights  = data_p(w_points+1:end)
-    if numel(gradient_ref) != numel(err_weights)
-        disp("gradient and err weights have mismatched length");
-        return
-    endif
+    gradient_ref = data_p;
+    err_weights = weights_p;
 else
-    w_points = numel(data_p)
-    gradient_ref = data_p
-    err_weights  = ones(1, w_points)
+    gradient_ref = data_p;
+    err_weights  = ones(1, w_points);
 endif
 
 output_precision(16);
