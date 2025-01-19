@@ -78,8 +78,6 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
         waitfor(h)
     endif
 
-    %csvwrite("../test-data/best_errors.csv", best_errs, "-append")
-
 endfunction
 
 function p_refit = refit_points(v, w_start, w_end, num_points_target)
@@ -281,7 +279,7 @@ function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random(fu
                 var_vals_start = var_vals
             endif
         endif
-        best_errs(end+1) = best_err
+        best_errs(end+1) = best_err;
     endfor
 endfunction
 
@@ -316,6 +314,6 @@ function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random_bo
                 var_vals_start = var_vals
             endif
         endif
-        best_errs(end+1) = best_err
+        best_errs(end+1) = best_err;
     endfor
 endfunction

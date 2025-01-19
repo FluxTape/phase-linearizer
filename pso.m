@@ -114,6 +114,10 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
   
       % Damp w
       w = w * w_damp;
+
+      if (iteration == 1)
+        ret_start = global_best.position;
+      endif
   
     endfor
   
@@ -121,7 +125,6 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
     ["Best cost: " num2str(global_best.cost)]
 
     ret = global_best.position;
-    ret_start = best_costs(1);
-    ret_best_costs = best_costs;
+    ret_best_costs = best_costs';
   
   endfunction
