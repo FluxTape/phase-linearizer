@@ -52,22 +52,22 @@ if !isempty(err_at)
     err_at
     return
 endif
-w_start              = tokens(1)
+w_start              = round(tokens(1))
 w_end                = tokens(2)
 w_points_internal    = round(tokens(3))
 order                = round(tokens(4))
 show_graph           = (tokens(5) > 0)
 algo                 = round(tokens(6))
 iterations           = round(tokens(7))
-includes_err_weights = round(tokens(8))
-length_data          = round(tokens(9))
+input_is_file        = (tokens(8) > 0)
+includes_err_weights = round(tokens(9))
 length_weights       = round(tokens(10))
-data_start = 11
-data_end = data_start+length_data-1
-weights_start = data_end+1
-weights_end = weights_start+length_weights-1
-data_p = tokens(data_start:data_end);
+weights_start = 11
+weights_end   = weights_start + length_weights - 1
+data_start    = weights_end + 1
+
 weights_p = tokens(weights_start:weights_end);
+data_p    = tokens(data_start:end);
 
 tf_order = idivide(numel(data_p), int32(2), "fix")
 tf_num = data_p(1:tf_order)

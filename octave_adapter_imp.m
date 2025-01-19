@@ -2,6 +2,8 @@ clear all
 close all
 pkg('load', 'optim');
 pkg('load', 'control');
+pkg('load', 'signal');
+
 data_str   = fread( stdin, 'char' );
 data_str   = char( data_str.' );
 str_tokens = strsplit( data_str );
@@ -48,15 +50,6 @@ if !isempty(err_at)
     return
 endif
 
-gradient_ref = data_p;
-w_points = numel(data_p)
-if (includes_err_weights > 0)
-    err_weights = weights_p;
-else
-    err_weights  = ones(1, w_points);
-endif
+data_p
 
-output_precision(16);
-[opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, gradient_ref, err_weights, show_graph);
-disp("final opt:");
-disp([opt e_min]');
+

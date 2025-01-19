@@ -144,6 +144,12 @@ impl Algo {
     }
 }
 
+enum DataSource<'a> {
+    Stdin,
+    Arg(Box<dyn Iterator<Item = &'a f64> + 'a>),
+    File(&'a String),
+}
+
 #[derive(clap::Subcommand, Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 enum Mode {
@@ -182,11 +188,11 @@ enum Mode {
         #[command(flatten)]
         weights: WeightsFCA,
 
-        /// path to file with input data
+        /// path to impulse response file (.wav)
         #[arg(short, long)]
         file: Option<String>,
 
-        /// data
+        /// sample rate followed by raw data
         data: Vec<f64>,
     },
 }
@@ -196,30 +202,32 @@ impl Mode {
         match self {
             Mode::Gradient { .. } => "./octave_adapter_gradient.m",
             Mode::TransferFunction { .. } => "./octave_adapter_tf.m",
-            Mode::ImpulseResponse { .. } => "./octave_adapter_impulse",
+            Mode::ImpulseResponse { .. } => "./octave_adapter_imp.m",
         }
     }
 
-    fn has_input(&self) -> bool {
-        // TODO fix this
+    fn data_source(&self) -> DataSource {
         match self {
-            Mode::Gradient { file, data, .. } => file.is_some() || !data.is_empty(),
-            Mode::TransferFunction { .. } => true,
-            Mode::ImpulseResponse { file, data, .. } => file.is_some() || !data.is_empty(),
-        }
-    }
-
-    fn get_input<'a>(&'a self) -> Box<dyn Iterator<Item = &'a f64> + 'a> {
-        match self {
-            Mode::Gradient { data, .. } => Box::new(data.iter()),
+            Mode::Gradient { file, data, .. } => match (file, !data.is_empty()) {
+                (Some(file), _) => DataSource::File(file),
+                (_, true) => DataSource::Arg(Box::new(data.iter())),
+                _ => DataSource::Stdin,
+            },
             Mode::TransferFunction {
                 numerator,
                 denominator,
                 ..
-            } => Box::new(numerator.iter().chain(denominator.iter())),
-            Mode::ImpulseResponse { data, .. } => Box::new(data.iter()),
+            } => DataSource::Arg(Box::new(numerator.iter().chain(denominator.iter()))),
+            Mode::ImpulseResponse { file, data, .. } => match (file, !data.is_empty()) {
+                (Some(file), _) => DataSource::File(file),
+                (_, true) => DataSource::Arg(Box::new(data.iter())),
+                _ => DataSource::Stdin,
+            },
         }
-        // TODO: implement file input. It may be best to read and parse the file within octave
+    }
+
+    fn input_is_file(&self) -> bool {
+        matches!(self.data_source(), DataSource::File(..))
     }
 
     fn weights_mode(&self) -> usize {
@@ -242,8 +250,8 @@ impl Mode {
 fn main() -> Result<()> {
     let args = Cli::parse();
 
-    let data_in = if !args.mode.has_input() {
-        stdin()
+    let data_in = match args.mode.data_source() {
+        DataSource::Stdin => stdin()
             .lines()
             .collect::<Result<Vec<_>, _>>()?
             .iter()
@@ -253,12 +261,9 @@ fn main() -> Result<()> {
             })
             .map(str::parse::<f64>)
             .map(|f| f.map(|g| g.to_string()))
-            .collect::<Result<Vec<_>, _>>()?
-    } else {
-        args.mode
-            .get_input()
-            .map(f64::to_string)
-            .collect::<Vec<String>>()
+            .collect::<Result<Vec<_>, _>>()?,
+        DataSource::Arg(data) => data.map(f64::to_string).collect::<Vec<String>>(),
+        DataSource::File(file) => [file.clone()].into(),
     };
     /*if args.weights == Weights::Custom && data_in.len() & 1 == 1 {
         return Err(anyhow!(
@@ -298,23 +303,28 @@ fn main() -> Result<()> {
     {
         let mut oct_stdin = octave.stdin.take().ok_or(anyhow!("failed to get stdin"))?;
         let mut writer = BufWriter::new(&mut oct_stdin);
-        let tmp = format!(
-            "{wmin} {wmax} {wpoints} {order} {graph} {algo} {iterations} {weights_mode} {length_data} {length_weights} {data} {weights}",
-            wmin = args.wmin,
-            wmax = args.wmax,
-            wpoints = args.points,
-            order = args.order,
-            graph = if args.graph { 1 } else { 0 },
-            algo = args.algo.to_usize(),
-            iterations = args.iterations,
-            weights_mode = args.mode.weights_mode(),
-            length_data = data_in.len(),
-            length_weights = weights.len(),
-            data = data_in.join(" "),
-            weights = weights.iter().map(f64::to_string).collect::<Vec<String>>().join(" ")
-        );
-        println!("octave args: {}", tmp);
-        let bytestring = tmp.as_bytes();
+        let octave_args = [
+            /* 01 */ args.wmin.to_string(),
+            /* 02 */ args.wmax.to_string(),
+            /* 03 */ args.points.to_string(),
+            /* 04 */ args.order.to_string(),
+            /* 05 */ (if args.graph { 1 } else { 0 }).to_string(),
+            /* 06 */ args.algo.to_usize().to_string(),
+            /* 07 */ args.iterations.to_string(),
+            /* 08 */ (if args.mode.input_is_file() { 1 } else { 0 }).to_string(),
+            /* 09 */ args.mode.weights_mode().to_string(),
+            /* 10 */ weights.len().to_string(),
+            /* 11.. */
+            weights
+                .iter()
+                .map(f64::to_string)
+                .collect::<Vec<String>>()
+                .join(" "),
+            data_in.join(" "),
+        ]
+        .join(" ");
+        println!("octave args: {}", octave_args);
+        let bytestring = octave_args.as_bytes();
         writer.write_all(bytestring)?;
     }
     println!("running octave...");
