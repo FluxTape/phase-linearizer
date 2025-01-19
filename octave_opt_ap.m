@@ -1,5 +1,5 @@
 % 0 <= w <= 1
-function [opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, gradient_ref, err_weights, show_plot)
+function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, gradient_ref, err_weights, show_plot)
     % w_points = numel(gradient_ref)
     w = linspace(w_start, w_end, w_points_internal);
     gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal);
@@ -29,12 +29,13 @@ function [opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, 
                 n = n-1;
             endif
         endwhile
+        best_errs = [];
     case 1
         title_txt = sprintf("order=%d  algo=random-unc  iterations=%d", order, iterations);
-        [opt, var_vals_start] = search_full_grid_random(err_func, order, iterations)
+        [opt, var_vals_start, best_errs] = search_full_grid_random(err_func, order, iterations)
     case 2
         title_txt = sprintf("order=%d  algo=random-con  iterations=%d", order, iterations);
-        [opt, var_vals_start] = search_full_grid_random_bounded(err_func, order, iterations)
+        [opt, var_vals_start, best_errs] = search_full_grid_random_bounded(err_func, order, iterations)
     otherwise
         title_txt = sprintf("order=%d  algo=pso  iterations=%d", order, iterations);
         var_min = zeros(1, order*2);
@@ -44,8 +45,8 @@ function [opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, 
             var_max(end+1) = r_max;
             var_max(end+1) = pi;
         endfor
-        var_vals_start = pso(err_func, order*2, var_min, var_max, iterations)
-        opt = var_vals_start;
+        [opt, opt_start, best_errs] = pso(err_func, order*2, var_min, var_max, iterations);
+        var_vals_start = opt_start;
     endswitch
     
     e_start = err_func(var_vals_start)
@@ -53,6 +54,14 @@ function [opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, 
     e_min = e_fmin;
 
     if (show_plot)
+        if (numel(best_errs) > 0)
+            %% Plot results
+            figure;
+            plot(best_errs, "LineWidth", 2);
+            xlabel("iteration");
+            ylabel("best err");
+        endif
+
         g_opt1 = gr_ap_m_even(opt, w.*pi);
         both1 = gradient_ref + g_opt1;
         target1 = zeros(length(w),1) + sum(both1 .* err_weights) / sum(err_weights);
@@ -68,6 +77,8 @@ function [opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, 
         grid on
         waitfor(h)
     endif
+
+    %csvwrite("../test-data/best_errors.csv", best_errs, "-append")
 
 endfunction
 
@@ -230,7 +241,7 @@ function best_positions = search_full_grid(func, order_half, num_grid_points)
     positions(1) = order_half;
     pos_total = sum(positions);
     best_positions = cell();
-    best_err = 9e9;
+    best_err = inf;
     while (!done)
         err = func(positions2var_vals(positions));
         if (err <= best_err) 
@@ -248,11 +259,12 @@ function best_positions = search_full_grid(func, order_half, num_grid_points)
     %var_vals = positions2var_vals(best_positions{end});
 endfunction
 
-function [best_var_vals, var_vals_start] = search_full_grid_random(func, order_half, num_variations)
+function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random(func, order_half, num_variations)
     var_vals_start = zeros(1, order_half*2);
     r_max = 1 - 1e-3;
     best_var_vals = var_vals_start;
-    best_err = 9e9;
+    best_err = inf;
+    best_errs = []
     for i_ = 1:num_variations
         var_vals = [];
         for k_ = 1:order_half
@@ -269,10 +281,11 @@ function [best_var_vals, var_vals_start] = search_full_grid_random(func, order_h
                 var_vals_start = var_vals
             endif
         endif
+        best_errs(end+1) = best_err
     endfor
 endfunction
 
-function [best_var_vals, var_vals_start] = search_full_grid_random_bounded(func, order_half, num_variations)
+function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random_bounded(func, order_half, num_variations)
     best_var_vals = [];
     best_err = 9e9;
     order = order_half*2;
@@ -284,6 +297,7 @@ function [best_var_vals, var_vals_start] = search_full_grid_random_bounded(func,
         ub(end+1) = pi; % theta 
     endfor
     ub
+    best_errs = []
     for i_ = 1:num_variations
         var_vals = [];
         for k_ = 1:order_half
@@ -302,5 +316,6 @@ function [best_var_vals, var_vals_start] = search_full_grid_random_bounded(func,
                 var_vals_start = var_vals
             endif
         endif
+        best_errs(end+1) = best_err
     endfor
 endfunction

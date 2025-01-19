@@ -1,5 +1,6 @@
-function ret = pso(cf, nr_variables, var_min, var_max, max_iterations)
-  
+% based on https://github.com/mschof/ParticleSwarmOptimization/blob/master/PSO1.m
+function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_max, max_iterations)
+
     %% Problem Definition
     % nr_variables                          % Number of variables unknown (part of the decision)
     variable_size = [1 nr_variables];       % Vector representation
@@ -118,13 +119,9 @@ function ret = pso(cf, nr_variables, var_min, var_max, max_iterations)
   
     %% Print results
     ["Best cost: " num2str(global_best.cost)]
-  
-    %% Plot results
-    figure;
-    plot(best_costs, "LineWidth", 2);
-    xlabel("iteration");
-    ylabel("best cost");
 
     ret = global_best.position;
+    ret_start = best_costs(1);
+    ret_best_costs = best_costs;
   
   endfunction
