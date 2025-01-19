@@ -188,7 +188,8 @@ enum Mode {
         #[command(flatten)]
         weights: WeightsFCA,
 
-        /// path to impulse response file (.wav)
+        /// path to impulse response file. If the file has multiple
+        /// audio channels only the first one will be used
         #[arg(short, long)]
         file: Option<String>,
 
@@ -265,12 +266,6 @@ fn main() -> Result<()> {
         DataSource::Arg(data) => data.map(f64::to_string).collect::<Vec<String>>(),
         DataSource::File(file) => [file.clone()].into(),
     };
-    /*if args.weights == Weights::Custom && data_in.len() & 1 == 1 {
-        return Err(anyhow!(
-            "number of data values and number of weights does not match: {} is odd",
-            data_in.len()
-        ));
-    }*/
     let weights = if args.mode.weights_mode() == 2 {
         let custom_weights = args
             .mode

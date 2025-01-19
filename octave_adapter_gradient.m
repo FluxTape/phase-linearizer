@@ -1,7 +1,10 @@
 clear all
 close all
+warning('off','Octave:shadowed-function')
 pkg('load', 'optim');
 pkg('load', 'control');
+
+
 data_str   = fread( stdin, 'char' );
 data_str   = char( data_str.' );
 str_tokens = strsplit( data_str );

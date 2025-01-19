@@ -1,5 +1,6 @@
 clear all
 close all
+warning('off','Octave:shadowed-function')
 pkg('load', 'statistics');
 
 % only used to generate filename to open
@@ -7,7 +8,7 @@ w_start = 0.1
 w_end = 0.9
 w_points_internal = 150
 order = 8
-algo = 2
+algo = 3
 iterations = 300
 show_plot = 0
 tf_num = [0.0015   -0.0020    0.0002   -0.0009    0.0028   -0.0009    0.0002   -0.0020    0.0015]
@@ -31,3 +32,4 @@ s_pruned_data = size(pruned_data)
 boxplot (pruned_data);
 ylabel("error")
 xlabel("x10 iterations")
+ylim([0, 3])

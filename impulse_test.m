@@ -42,7 +42,7 @@ figure 1
 freqz(mono, 1, 512, fs)
 
 figure 2
-[H2, f_n] = freqz(mono, 1, 2048, fs)
+[H2, f_n] = freqz(mono, 1, 2048, fs);
 pha = unwrap(angle(H2))';
 pha = rm_pi_jumps(pha);
 plot(f_n, pha*180/pi)

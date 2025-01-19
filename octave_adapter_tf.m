@@ -1,5 +1,6 @@
 clear all
 close all
+warning('off','Octave:shadowed-function')
 pkg('load', 'optim');
 pkg('load', 'control');
 pkg('load', 'signal');
@@ -127,10 +128,10 @@ elseif (includes_err_weights == 1)
     for k = 1:numel(err_weights_)
         err_weights(k) = err_weights_(k);
     endfor
-    err_weights
+    %err_weights
 else
     w_points = numel(grd_ref)
-    err_weights  = ones(1, w_points)
+    err_weights  = ones(1, w_points);
 endif
 
 %grd_ref

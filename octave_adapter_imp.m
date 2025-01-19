@@ -1,5 +1,6 @@
 clear all
 close all
+warning('off','Octave:shadowed-function')
 pkg('load', 'optim');
 pkg('load', 'control');
 pkg('load', 'signal');
@@ -37,11 +38,16 @@ weights_p = tokens(weights_start:weights_end);
 data_p = [];
 if (input_is_file)
     filename = [str_tokens(data_start:end)]{1}
-    data_p = csvread(filename);
+    [dir_, name, ext] = fileparts(filename)
+    if (ext == ".txt" || ext == ".csv")
+        data_p = csvread(filename);
+    else
+        [y, fs] = audioread(filename);
+        data_p = [fs y(:, 1)'];
+    endif
 else
     data_p = tokens(data_start:end);
 endif
-
 
 err_at = find(isnan(data_p));
 if !isempty(err_at)
@@ -50,6 +56,8 @@ if !isempty(err_at)
     return
 endif
 
-data_p
+fs = data_p(1)
+h_imp = data_p(2:end);
+s_h_imp = size(h_imp)
 
 
