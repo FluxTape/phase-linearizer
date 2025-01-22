@@ -53,7 +53,7 @@ if !isempty(err_at)
     err_at
     return
 endif
-w_start              = round(tokens(1))
+w_start              = tokens(1)
 w_end                = tokens(2)
 w_points_internal    = round(tokens(3))
 order                = round(tokens(4))
@@ -79,9 +79,9 @@ if numel(tf_num) != numel(tf_den)
 endif
 
 w = linspace(w_start, w_end, w_points_internal);
-h_z = tf(tf_num, tf_den, pi)
-[tf_num, tf_den] = tfdata(h_z, 'v'); % override tf_num, tf_den
-fq = h_z(w);
+inputtf = tf(tf_num, tf_den, pi)
+[tf_num, tf_den] = tfdata(inputtf, 'v'); % override tf_num, tf_den
+fq = inputtf(w);
 
 
 %ph = unwrap(angle(fq));
@@ -135,6 +135,12 @@ else
 endif
 
 %grd_ref
+
+if (show_graph)
+    figure;
+    wb = linspace(0.01, 1, 512);
+    bode(inputtf, wb)
+endif
 
 output_precision(16);
 [opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, grd_ref, err_weights, show_graph);

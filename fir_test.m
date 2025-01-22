@@ -42,16 +42,16 @@ function target_delay = find_target_delay(w, pha_in)
     target_delay = k;
 endfunction
 
-num = [0.0023    0.0058    0.0102    0.0118    0.0102    0.0058    0.0023]
-den = [1.0000   -3.2076    4.6897   -3.8538    1.8573   -0.4931    0.0561]
+#num = [0.0023    0.0058    0.0102    0.0118    0.0102    0.0058    0.0023]
+#den = [1.0000   -3.2076    4.6897   -3.8538    1.8573   -0.4931    0.0561]
 #num = [1.0349   -0.9159    0.7704   -0.4199    0.1551]
 #den = [1.0000   -0.9882    0.7910   -0.3476    0.1694]
-#num = [0.0015   -0.0020    0.0002   -0.0009    0.0028   -0.0009    0.0002   -0.0020    0.0015]  
-#den = [1.0000   -2.7355    5.9780   -7.8335    8.5654   -6.3463    3.9239   -1.4513    0.4299]
-tf_pre = tf(num, den, pi/2)
+num = [0.0015   -0.0020    0.0002   -0.0009    0.0028   -0.0009    0.0002   -0.0020    0.0015]  
+den = [1.0000   -2.7355    5.9780   -7.8335    8.5654   -6.3463    3.9239   -1.4513    0.4299]
+tf_pre = tf(num, den, 1)
 
 num_points = 60
-w = linspace(0, pi, num_points);
+w = linspace(0, pi, num_points*10);
 [mag, pha, w] = bode(tf_pre, w);
 
 figure 1
@@ -60,6 +60,23 @@ bode(tf_pre)
 % pha to radians
 pha = pha*pi/180;
 pha = rm_pi_jumps(pha);
+%{
+start_deg = pha(1)
+deg_mid = pha(end/2)
+end_deg = pha(end)
+
+[g_pre, w_pre]  = grpdelay(num, den, numel(w)*10);
+n = numel(g_pre)
+pha = [0];
+for k = 2:n
+    pha(end+1) = pha(end) + g_pre(k)/n;
+endfor
+pha = -pha;
+end_deg = pha(end)
+deg_mid = pha(end/2)
+pha = downsample(pha, 10)
+%}
+
 
 %k = find_target_delay(w, pha)
 %wk = w*k;
@@ -72,6 +89,8 @@ title("Unwrapped Phase Response of Input Transfer Function")
 xlabel("Normalized Frequency (×π rad/sample)")
 ylabel("Phase (deg)")
 
+pha = downsample(pha, 10);
+w = linspace(0, pi, num_points);
 fresp = [];
 for n = 1:numel(w)
     fresp(n)  = 1*exp(1i*pha(n));
@@ -112,11 +131,12 @@ window = hamming(numel(fir))';
 fir = fir .* window *2;
 
 figure 4
-plot(w_sym, fir)
+plot(w_sym/pi, fir)
 title("Impulse Response of Compensation FIR Filter")
 xlabel("Normalized Frequency (×π rad/sample)")
 ylabel("FIR Filter Value")
-ylim([-0.6, 0.6])
+y_scale = max(abs(fir))*1.2;
+ylim([-y_scale, +y_scale])
 
 size_fir = numel(fir)
 
@@ -159,21 +179,24 @@ xlabel("Normalized Frequency (×π rad/sample)")
 ylabel("Phase (deg)")
 legend("Input", "Compensation Filter", "Combined")
 
-%{
+%
 figure 7
 [g_fir, w_g] = grpdelay(fir);
-[g_pre, w_]  = grpdelay(num, den); % TODO!!! --------------------------------------------------
+[g_pre, w_g2]  = grpdelay(num, den);
+g_com = g_pre+g_fir;
 
 s_g1 = numel(w_g)
 s_g2 = numel(w_g2)
 
+grp_max = max(g_fir)
 
-plot(w_g/pi, g_pre, w_g/pi, g_fir, w_g/pi, g_pre+g_fir)
+plot(w_g/pi, g_pre, w_g/pi, g_fir, w_g/pi, g_com)
 title("Group Delay of FIR Filter")
 xlabel("Normalized Frequency (×π rad/sample)")
 ylabel("Group Delay (samples)")
 legend("Input", "Compensation Filter", "Combined")
-%}
+
+%{
 figure 8
 p_ref = polyfit(w_n, pha_combined, 1);
 lin_ref = w_n * p_ref(1);
@@ -182,5 +205,16 @@ plot(w_n/pi, err)
 title("Phase Error with FIR Compensation Filter")
 xlabel("Normalized Frequency (×π rad/sample)")
 ylabel("Error")
-ylim([0, 0.01])
+%ylim([0, 0.01])
+%}
+
+figure 8
+avg_grd = mean(g_com)
+err = (g_com - avg_grd).^2;
+avg_err = mean(err)
+
+plot(w_n/pi, err)
+title(sprintf("Group Delay Error with FIR Compensation Filter, avg err=%d", avg_err))
+xlabel("Normalized Frequency (×π rad/sample)")
+ylabel("Error^2")
 

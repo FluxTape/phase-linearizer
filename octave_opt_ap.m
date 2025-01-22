@@ -73,7 +73,7 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
             w, target1,
             w, err_weights)
         legend('grd ref', 'opt', 'ref+opt', 'err', 'target', 'err weights')
-        title(title_txt)
+        title(sprintf("%s, mean err=%d", title_txt, e_min))
         grid on
         waitfor(h)
     endif
