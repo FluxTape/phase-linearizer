@@ -4,14 +4,14 @@ pkg('load', 'optim');
 pkg('load', 'control');
 pkg('load', 'signal');
 
-num_runs = 30
+num_runs = 20
 
 w_start = 0.1
 w_end = 0.9
 w_points_internal = 150
 order = 8
 algo = 3
-iterations = 300
+iterations = 1000
 show_plot = 0
 tf_num = [0.0015   -0.0020    0.0002   -0.0009    0.0028   -0.0009    0.0002   -0.0020    0.0015]
 tf_den = [1.0000   -2.7355    5.9780   -7.8335    8.5654   -6.3463    3.9239   -1.4513    0.4299]

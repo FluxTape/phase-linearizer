@@ -54,6 +54,9 @@ num_points = 60
 w = linspace(0, pi, num_points);
 [mag, pha, w] = bode(tf_pre, w);
 
+figure 1
+bode(tf_pre)
+
 % pha to radians
 pha = pha*pi/180;
 pha = rm_pi_jumps(pha);
@@ -61,11 +64,13 @@ pha = rm_pi_jumps(pha);
 %k = find_target_delay(w, pha)
 %wk = w*k;
 %lin_dif = wk - pha;
-figure 5
-plot(w, pha)
+figure 2
+
+plot(w/pi, pha*180/pi)
 %plot(w, pha, w, wk, w, lin_dif)
-
-
+title("Unwrapped Phase Response of Input Transfer Function")
+xlabel("Normalized Frequency (×π rad/sample)")
+ylabel("Phase (deg)")
 
 fresp = [];
 for n = 1:numel(w)
@@ -82,8 +87,12 @@ w_sym = linspace(-pi, pi, numel(fresp));
 
 numel(fresp)
 
-figure 1
-plot(w_sym, real(fresp), w_sym, imag(fresp))
+figure 3
+plot(w_sym/pi, real(fresp), w_sym/pi, imag(fresp))
+title("Real and Imaginary Components of Phase Response in Time Domain")
+legend("real", "imaginary")
+xlabel("Normalized Frequency (×π rad/sample)")
+ylabel("Value")
 
 fir = ifft(fresp);
 fir_n = numel(fir)
@@ -102,24 +111,76 @@ window = hamming(numel(fir))';
 
 fir = fir .* window *2;
 
-figure 2
+figure 4
 plot(w_sym, fir)
+title("Impulse Response of Compensation FIR Filter")
+xlabel("Normalized Frequency (×π rad/sample)")
+ylabel("FIR Filter Value")
+ylim([-0.6, 0.6])
 
-figure 7
-freqz(fir, 1, numel(pha)*2);
-[h, w_n] = freqz(fir, 1, numel(pha)*2);
+size_fir = numel(fir)
+
+figure 5
+%[h, w_n] = freqz(fir, 1, numel(pha)*2);
+[h, w_n] = freqz(fir, 1, 1024);
+w_n = w_n';
 fir_pha = unwrap(angle(h))';
 fir_pha = fir_pha(1:end/2);
-figure 3
+fir_db = mag2db(abs(h));
+fir_db = fir_db(1:end/2);
+w_n = w_n(1:end/2);
+
+%finer grid for plotting
+subplot (2, 1, 1)
+plot(w_n/pi, fir_db);
+title("Bode Diagram of FIR filter")
+ylabel("Magnitude [dB]")
+
+subplot (2, 1, 2)
+plot(w_n/pi, fir_pha*180/pi);
+xlabel("Normalized Frequency (×π rad/sample)")
+ylabel("Phase (deg)")
+
+figure 6
 numel(w)
+numel(w_n)
 numel(fir_pha)
-pha_combined = fir_pha+pha;
-plot(w, fir_pha, w, pha_combined)
 
-figure 4
-p_ref = polyfit(w, pha_combined, 1);
-lin_ref = w * p_ref(1);
+[mag_fine, pha_fine, w_] = bode(tf_pre, w_n);
+% pha to radians
+pha_fine = pha_fine*pi/180;
+pha_fine = rm_pi_jumps(pha_fine);
+
+
+pha_combined = fir_pha+pha_fine;
+plot(w_n/pi, pha_fine*180/pi, w_n/pi, fir_pha*180/pi, w_n/pi, pha_combined*180/pi)
+title("Phase Response")
+xlabel("Normalized Frequency (×π rad/sample)")
+ylabel("Phase (deg)")
+legend("Input", "Compensation Filter", "Combined")
+
+%{
+figure 7
+[g_fir, w_g] = grpdelay(fir);
+[g_pre, w_]  = grpdelay(num, den); % TODO!!! --------------------------------------------------
+
+s_g1 = numel(w_g)
+s_g2 = numel(w_g2)
+
+
+plot(w_g/pi, g_pre, w_g/pi, g_fir, w_g/pi, g_pre+g_fir)
+title("Group Delay of FIR Filter")
+xlabel("Normalized Frequency (×π rad/sample)")
+ylabel("Group Delay (samples)")
+legend("Input", "Compensation Filter", "Combined")
+%}
+figure 8
+p_ref = polyfit(w_n, pha_combined, 1);
+lin_ref = w_n * p_ref(1);
 err = (lin_ref - pha_combined).^2;
-plot(w, err)
-
+plot(w_n/pi, err)
+title("Phase Error with FIR Compensation Filter")
+xlabel("Normalized Frequency (×π rad/sample)")
+ylabel("Error")
+ylim([0, 0.01])
 
