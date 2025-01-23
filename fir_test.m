@@ -108,7 +108,7 @@ numel(fresp)
 
 figure 3
 plot(w_sym/pi, real(fresp), w_sym/pi, imag(fresp))
-title("Real and Imaginary Components of Phase Response in Time Domain")
+title("Real and Imaginary Components of Phase Response")
 legend("real", "imaginary")
 xlabel("Normalized Frequency (×π rad/sample)")
 ylabel("Value")
