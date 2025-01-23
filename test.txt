@@ -9,4 +9,4 @@ cargo run -- -n 0.1 -x 0.9 -p 150 -o 8 -a grid -i 300 -g transfer-function --amp
 
 numTF = [1.0349   -0.9159    0.7704   -0.4199    0.1551]
 denTF = [1.0000   -0.9882    0.7910   -0.3476    0.1694]
-cargo run -- -n 0.0 -x 1.0 -p 100 -o 7 -a grid -i 300 -g transfer-function --amp --num 1.0349   -0.9159    0.7704   -0.4199    0.1551 --den 1.0000   -0.9882    0.7910   -0.3476    0.1694
+cargo run -- -n 0.0 -x 1.0 -p 100 -o 5 -a grid -i 300 -g transfer-function --amp --num 1.0349   -0.9159    0.7704   -0.4199    0.1551 --den 1.0000   -0.9882    0.7910   -0.3476    0.1694

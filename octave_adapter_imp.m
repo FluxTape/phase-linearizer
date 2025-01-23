@@ -60,4 +60,59 @@ fs = data_p(1)
 h_imp = data_p(2:end);
 s_h_imp = size(h_imp)
 
+grpdelay(h_imp, 512, fs)
+[grd_ref, wx] = grpdelay(h_imp, 512, fs);
+wx /= pi;
+start_idx = 1;
+for k = 1:numel(wx);
+    if (wx(k) > w_start)
+        start_idx = k;
+        break
+    endif
+endfor
+end_idx = 1;
+for k = numel(wx):-1:1;
+    if (wx(k) < w_end)
+        end_idx = k;
+        break
+    endif
+endfor
+start_idx
+end_idx
+
+grd_ref = grd_ref(start_idx:end_idx)';
+n_grd = numel(grd_ref)
+
+maxgrp = 0;
+maxgrp_w = 0;
+for i = 1:numel(grd_ref) 
+    if (grd_ref(i) > maxgrp)
+        maxgrp = grd_ref(i);
+        maxgrp_w = wx(i);
+    endif
+endfor
+maxgrp
+maxgrp_w
+
+if (includes_err_weights == 2)
+    err_weights  = weights_p;
+elseif (includes_err_weights == 1)
+    [H2, f_n] = freqz(h_imp, 1, 2048, fs);
+    err_weights_ = abs(H2);
+    for k = 1:numel(err_weights_)
+        err_weights(k) = err_weights_(k);
+    endfor
+    %err_weights
+else
+    w_points = numel(grd_ref)
+    err_weights  = ones(1, w_points);
+endif
+gradient_ref = grd_ref;
+
+output_precision(16);
+[opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, gradient_ref, err_weights, show_graph);
+disp("final opt:");
+disp([opt e_min]');
+
+
 

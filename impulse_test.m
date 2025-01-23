@@ -3,6 +3,18 @@ close all
 pkg('load', 'optim');
 pkg('load', 'control');
 
+function g = grad(v, delta)
+    n = numel(v);
+    d = [];
+    for i = 2:(n-1)
+        d(i) = v(i+1)-v(i-1);
+    endfor
+    % interpolate first and last point
+    d(1) = 2*d(2) - d(3);
+    d(n) = 2*d(n-1) - d(n-2);
+    g = -d./(2*delta);
+endfunction
+
 function b = approx_eq(v1, v2, epsilon)
     d = abs(v1 - v2);
     b = (d < epsilon);
@@ -47,3 +59,7 @@ pha = unwrap(angle(H2))';
 pha = rm_pi_jumps(pha);
 plot(f_n, pha*180/pi)
 grid on
+
+figure 3
+grd = grad(pha, 2048/fs)
+plot(grd)

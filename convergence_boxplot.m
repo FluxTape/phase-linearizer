@@ -22,7 +22,7 @@ s_data = size(data)
 
 % only plot every tenth iteration
 pruned_data = [];
-every_x = 20
+every_x = 25
 for k = 1:size(data)(2)
     if (mod(k, every_x) == 0)
         pruned_data(:,end+1) = data(:,k);
@@ -31,13 +31,18 @@ endfor
 s_pruned_data = size(pruned_data)
 
 labels = {};
-label_every_x = 5;
+label_every_x = 4;
 for k = 1:size(pruned_data)(2)
     if (mod(k, label_every_x) == 0)
         labels{end+1} = num2str(k*every_x);
     else
         labels{end+1} = "";
     endif
+endfor
+
+med = []
+for k = 1:size(pruned_data)(2)
+    med(end+1) = median(pruned_data(:,k));
 endfor
 
 algoname = "";
@@ -52,8 +57,12 @@ case 3
     algoname = "pso";
 endswitch
 
+plot(med, 'color', 'k')
+hold on
 boxplot (pruned_data, 'Labels', labels);
-ylabel("error")
-xlabel("iterations")
-title(sprintf("convergence behavior algorithm=%s", algoname))
+ylabel("Error")
+xlabel("Iterations")
+title(sprintf("Convergence Behavior of Algorithm=%s, runs=%d", algoname, size(pruned_data)(1)))
 ylim([0, 3])
+hold off
+
