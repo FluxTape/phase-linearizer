@@ -180,8 +180,8 @@ function stable = sanity_check(var_vals)
             endif
         else % theta
             if (v > pi)
-                phi = v
-                disp("phi too big")
+                theta = v
+                disp("theta too big")
                 stable = false;
             endif
         endif
