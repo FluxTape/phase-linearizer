@@ -5,8 +5,6 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
     gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal);
     length_grd_ref = numel(gradient_ref)
     err_weights = refit_points(err_weights, w_start, w_end, w_points_internal);
-
-    err_weights = err_weights .^2; % TODO: CHECK THIS
     
     err_func = @(v) err_sum(err(gradient_ref + gr_ap_m_even(v, w.*pi), err_weights));
     title_txt = "";
@@ -123,7 +121,8 @@ endfunction
 function e = err(grd, err_weights)
     avg = sum(grd .* err_weights) / sum(err_weights);
     %avg = mean(grd);
-    e = ((grd - avg).^2).*err_weights;
+    % square weights here to account for square in err
+    e = ((grd - avg).*err_weights).^2;
 endfunction
 
 function e = err_sum(err)
