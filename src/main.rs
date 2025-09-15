@@ -207,7 +207,7 @@ impl Mode {
         }
     }
 
-    fn data_source(&self) -> DataSource {
+    fn data_source(&self) -> DataSource<'_> {
         match self {
             Mode::Gradient { file, data, .. } => match (file, !data.is_empty()) {
                 (Some(file), _) => DataSource::File(file),

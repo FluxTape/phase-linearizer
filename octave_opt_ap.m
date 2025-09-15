@@ -158,6 +158,7 @@ function pi = ranges2points(ri)
     pi = p;
 endfunction
 
+% returns the grid frequencies used for searching
 function th = gen_thetas(num_grid_points)
     p = linspace(0, pi, num_grid_points+2);
     th = p(2:end-1);
@@ -188,17 +189,18 @@ function stable = sanity_check(var_vals)
     endfor
 endfunction
 
+%converts positions array into (r, theta) using default_r for r
 function v = positions2var_vals(positions)
     order_half = sum(positions);
     num_pos = numel(positions);
     thetas = gen_thetas(num_pos);
-    default_r = 1/sqrt(2);
+    default_r = 1/sqrt(2); % 0.707106
     v = [];
     pos = 1;
     for p_idx = 1:num_pos
         theta = thetas(p_idx);
         for k = 0:positions(p_idx)-1
-            v(pos) = default_r; % 0.707106
+            v(pos) = default_r;
             if (p_idx < num_pos)
                 v(pos+1) = theta*(1+0.01*k);
             else
