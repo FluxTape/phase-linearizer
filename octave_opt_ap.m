@@ -34,10 +34,10 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
         best_errs = [];
     case 1
         title_txt = sprintf("order=%d  algo=random-unc  iterations=%d", order, iterations);
-        [opt, var_vals_start, best_errs] = search_full_grid_random(err_func, order, iterations)
+        [opt, var_vals_start, best_errs] = search_full_grid_random(err_func, order, iterations, w_start, w_end);
     case 2
         title_txt = sprintf("order=%d  algo=random-con  iterations=%d", order, iterations);
-        [opt, var_vals_start, best_errs] = search_full_grid_random_bounded(err_func, order, iterations)
+        [opt, var_vals_start, best_errs] = search_full_grid_random_bounded(err_func, order, iterations, w_start, w_end);
     otherwise
         title_txt = sprintf("order=%d  algo=pso  iterations=%d", order, iterations);
         var_min = zeros(1, order*2);
@@ -193,7 +193,6 @@ endfunction
 
 %converts positions array into (r, theta) using default_r for r
 function v = positions2var_vals(positions)
-    order_half = sum(positions);
     num_pos = numel(positions);
     thetas = gen_thetas(num_pos);
     default_r = 1/sqrt(2); % 0.707106
@@ -238,11 +237,11 @@ function pos = update_positions(pos)
     endif
 endfunction
 
-function best_positions = search_full_grid(func, order_half, num_grid_points)
+function best_positions = search_full_grid(func, n, num_grid_points)
     thetas = gen_thetas(num_grid_points)
     done = false;
     positions = zeros(1, num_grid_points);
-    positions(1) = order_half;
+    positions(1) = n;
     pos_total = sum(positions);
     best_positions = cell();
     best_err = inf;
@@ -263,61 +262,67 @@ function best_positions = search_full_grid(func, order_half, num_grid_points)
     %var_vals = positions2var_vals(best_positions{end});
 endfunction
 
-function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random(func, order_half, num_variations)
-    var_vals_start = zeros(1, order_half*2);
-    r_max = 1 - 1e-3;
+function var_vals = random_var_vals(n, r_min, r_max, theta_min, theta_max)
+    var_vals = [];
+    for k_ = 1:n
+        var_vals(end+1) = r_min + rand(1)*(r_max - r_min);             % r
+        var_vals(end+1) = theta_min + rand(1)*(theta_max - theta_min); % theta 
+    endfor
+endfunction
+
+function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random(func, n, num_iterations, w_start, w_end)
+    var_vals_start = zeros(1, n*2);
+    % bounds used for choosing random r and theta
+    r_min = 0.6;
+    r_max = 0.9;
+    theta_min = w_start*pi;
+    theta_max = w_end*pi;
     best_var_vals = var_vals_start;
     best_err = inf;
-    best_errs = []
-    for i_ = 1:num_variations
-        var_vals = [];
-        for k_ = 1:order_half
-            var_vals(end+1) = rand(1)*r_max; % r
-            var_vals(end+1) = rand(1)*pi; % theta 
-        endfor
-
+    best_errs = []; % used for visualisation purposes only
+    for i_ = 1:num_iterations
+        var_vals = random_var_vals(n, r_min, r_max, theta_min, theta_max);
         [var_vals_opt,ressquared,eflag,outputu] = fminunc(func,var_vals);
         if (is_stable(var_vals_opt))
             err = func(var_vals_opt);
             if (err < best_err)
-                best_err = err
-                best_var_vals = var_vals_opt
-                var_vals_start = var_vals
+                best_err = err;
+                best_var_vals = var_vals_opt;
+                var_vals_start = var_vals;
             endif
         endif
         best_errs(end+1) = best_err;
     endfor
 endfunction
 
-function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random_bounded(func, order_half, num_variations)
+function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random_bounded(func, n, num_iterations, w_start, w_end)
     best_var_vals = [];
-    best_err = 9e9;
-    order = order_half*2;
-    r_max = 1 - 1e-6;
+    best_err = inf;
+    order = n*2;
+    % bounds used for choosing random r and theta
+    r_min = 0.6;
+    r_max = 0.9;
+    theta_min = w_start*pi;
+    theta_max = w_end*pi;
     lb = zeros(1, order);
     ub = [];
-    for k_ = 1:order_half
-        ub(end+1) = r_max; % r
-        ub(end+1) = pi; % theta 
+    for k_ = 1:n
+        ub(end+1) = 1 - 1e-6; % r
+        ub(end+1) = pi;       % theta 
     endfor
     ub
-    best_errs = []
-    for i_ = 1:num_variations
-        var_vals = [];
-        for k_ = 1:order_half
-            var_vals(end+1) = rand(1)*r_max; % r
-            var_vals(end+1) = rand(1)*pi; % theta 
-        endfor
-
+    best_errs = []; % used for visualisation purposes only
+    for i_ = 1:num_iterations
+        var_vals = random_var_vals(n, r_min, r_max, theta_min, theta_max)
         [var_vals_opt, objf, cvg, outp] = fmincon(func,var_vals',[],[],[],[],lb,ub);
         var_vals_opt = var_vals_opt';
 
         if (is_stable(var_vals_opt))
             err = func(var_vals_opt);
             if (err < best_err)
-                best_err = err
-                best_var_vals = var_vals_opt
-                var_vals_start = var_vals
+                best_err = err;
+                best_var_vals = var_vals_opt;
+                var_vals_start = var_vals;
             endif
         endif
         best_errs(end+1) = best_err;
