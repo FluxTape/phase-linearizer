@@ -12,21 +12,23 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
     case 0
         title_txt = sprintf("order=%d  algo=grid", order);
         divs_search_grid = 15; % determined by experimentation, larger values too slow
+        % checks error at all permutations of positions
         best_positions = search_full_grid(err_func, order, divs_search_grid);
         var_vals_start = positions2var_vals(best_positions{end});
         opt = var_vals_start;
         found_solution = false;
-        n = numel(best_positions);
-        while (n>1 && !found_solution)
-            p = best_positions{n}
-            var_vals_start = positions2var_vals(p);
-            [xunc1,ressquared,eflag,outputu] = fminunc(err_func,var_vals_start);
-            if (sanity_check(xunc1))
-                opt = xunc1;
+        np = numel(best_positions);
+        % check best_positions from best to worst until a stable solution is found
+        while (np>1 && !found_solution)
+            % get next var_vals
+            var_vals_start = positions2var_vals(best_positions{np});
+            [var_vals_opt,ressquared,eflag,outputu] = fminunc(err_func,var_vals_start);
+            if (is_stable(var_vals_opt)) % check if optimization produced stable filter chain
+                opt = var_vals_opt;
                 found_solution = true;
             else
                 disp("result unstable, trying different start values")
-                n = n-1;
+                np = np-1;
             endif
         endwhile
         best_errs = [];
@@ -164,7 +166,7 @@ function th = gen_thetas(num_grid_points)
     th = p(2:end-1);
 endfunction
 
-function stable = sanity_check(var_vals)
+function stable = is_stable(var_vals)
     stable = true;
     n = numel(var_vals);
     for i = 1:n
@@ -274,12 +276,12 @@ function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random(fu
             var_vals(end+1) = rand(1)*pi; % theta 
         endfor
 
-        [xunc1,ressquared,eflag,outputu] = fminunc(func,var_vals);
-        if (sanity_check(xunc1))
-            err = func(xunc1);
+        [var_vals_opt,ressquared,eflag,outputu] = fminunc(func,var_vals);
+        if (is_stable(var_vals_opt))
+            err = func(var_vals_opt);
             if (err < best_err)
                 best_err = err
-                best_var_vals = xunc1
+                best_var_vals = var_vals_opt
                 var_vals_start = var_vals
             endif
         endif
@@ -307,14 +309,14 @@ function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random_bo
             var_vals(end+1) = rand(1)*pi; % theta 
         endfor
 
-        [xunc1, objf, cvg, outp] = fmincon(func,var_vals',[],[],[],[],lb,ub);
-        xunc1 = xunc1';
+        [var_vals_opt, objf, cvg, outp] = fmincon(func,var_vals',[],[],[],[],lb,ub);
+        var_vals_opt = var_vals_opt';
 
-        if (sanity_check(xunc1))
-            err = func(xunc1);
+        if (is_stable(var_vals_opt))
+            err = func(var_vals_opt);
             if (err < best_err)
                 best_err = err
-                best_var_vals = xunc1
+                best_var_vals = var_vals_opt
                 var_vals_start = var_vals
             endif
         endif
