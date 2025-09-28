@@ -41,7 +41,7 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
     otherwise
         title_txt = sprintf("order=%d  algo=pso  iterations=%d", order, iterations);
         var_min = zeros(1, order*2);
-        r_max = 1 - 1e-6;10
+        r_max = 1 - 1e-3;
         var_max = [];
         for i_ = 1:order
             var_max(end+1) = r_max;

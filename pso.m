@@ -11,12 +11,8 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
     swarm_size = 250;                       % Swarm size (number of particles)
     w = 1;                                  % Inertia coefficient                      
     w_damp = 0.98;                          % damping of inertia coefficient, lower = faster damping
-    %c1 = 2;                                 % Cognitive acceleration coefficient (c1 + c2 = 4)
-    %c2 = 2;                                 % Social acceleration coefficient (c1 + c2 = 4)
-    c1_start = 1
-    c1_end   = 2
-    c2_start = 3
-    c2_end   = 2
+    c1 = 2;                                 % Cognitive acceleration coefficient (c1 + c2 = 4)
+    c2 = 2;                                 % Social acceleration coefficient (c1 + c2 = 4)
   
     %% Init
     template_particle.position = [];
@@ -66,10 +62,6 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
     %% PSO Loop
   
     for iteration=1:max_iterations
-
-      x = (iteration-1)/(max_iterations-1);
-      c1 = c1_start + (c1_end-c1_start)*x
-      c2 = c2_start + (c2_end-c2_start)*x
   
       for i=1:swarm_size
   
