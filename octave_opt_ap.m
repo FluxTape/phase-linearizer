@@ -123,8 +123,7 @@ endfunction
 function e = err(grd, err_weights)
     avg = sum(grd .* err_weights) / sum(err_weights);
     %avg = mean(grd);
-    % square weights here to account for square in err
-    e = ((grd - avg).*err_weights).^2;
+    e = ((grd - avg).^2).*err_weights;
 endfunction
 
 function e = err_sum(err)
