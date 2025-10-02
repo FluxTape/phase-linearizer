@@ -38,8 +38,14 @@ function [ret, ret_start, ret_best_costs] = pso2(cf, nr_variables, var_min, var_
       endfor
       particles(i).position = position;
   
-      % Initiliaze velocity to the 0 vector
-      particles(i).velocity = zeros(variable_size);
+      % Initiliaze with random velocity
+      velocity = [];
+      for k = 1:nr_variables
+        d = var_max(k) - var_min(k);
+        % at most, particles should move no faster than half the search space per iteration
+        velocity(k) = var_min(k) + d*rand(1)*0.5; 
+      endfor
+      particles(i).velocity = velocity;
   
       % Evaluate the current cost
       particles(i).cost = cf(particles(i).position);
