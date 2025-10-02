@@ -38,6 +38,17 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
     case 2
         title_txt = sprintf("order=%d  algo=random-con  iterations=%d", order, iterations);
         [opt, var_vals_start, best_errs] = search_full_grid_random_bounded(err_func, order, iterations, w_start, w_end);
+    case 3
+        title_txt = sprintf("order=%d  algo=pso  iterations=%d", order, iterations);
+        var_min = zeros(1, order*2);
+        r_max = 1 - 1e-3;
+        var_max = [];
+        for i_ = 1:order
+            var_max(end+1) = r_max;
+            var_max(end+1) = pi;
+        endfor
+        [opt, opt_start, best_errs] = pso(err_func, order*2, var_min, var_max, iterations);
+        var_vals_start = opt_start;
     otherwise
         title_txt = sprintf("order=%d  algo=pso  iterations=%d", order, iterations);
         var_min = zeros(1, order*2);
@@ -47,8 +58,17 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
             var_max(end+1) = r_max;
             var_max(end+1) = pi;
         endfor
-        [opt, opt_start, best_errs] = pso2(err_func, order*2, var_min, var_max, iterations);
-        var_vals_start = opt_start;
+        best_errs = []
+        best_opt_err = inf;
+        for i_ = 1:50
+            [opt_i, opt_start_i, best_errs_i] = pso2(err_func, order*2, var_min, var_max, iterations);
+            best_errs(:, i_) = best_errs_i(:);
+            if (best_errs_i(end) < best_opt_err)
+                best_opt_err = best_errs_i(end);
+                opt = opt_i;
+                var_vals_start = opt_start_i;
+            endif
+        endfor
     endswitch
     
     e_start = err_func(var_vals_start)

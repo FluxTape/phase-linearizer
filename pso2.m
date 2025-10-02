@@ -8,10 +8,10 @@ function [ret, ret_start, ret_best_costs] = pso2(cf, nr_variables, var_min, var_
     % var_max                               % Upper bound of decision space
   
     %% Parameter Adjustment
-    swarm_size = 40;                       % Swarm size (number of particles)
+    swarm_size = 70;                       % Swarm size (number of particles)
     c1 = 0.7;                               % self confidence
     c2 = 1.43;                              % cmax, confidence in others
-    K = 3;                                  % number of informants
+    K = 5;                                  % number of informants
   
     %% Init
     template_particle.position = [];
@@ -19,6 +19,8 @@ function [ret, ret_start, ret_best_costs] = pso2(cf, nr_variables, var_min, var_
     template_particle.cost = 0;
     template_particle.best.position = [];   % Local best
     template_particle.best.cost = inf;       % Local best
+
+    max_iterations = idivide(max_iterations, int32(5));
   
     % Copy and put the particle into a matrix
     particles = repmat(template_particle, swarm_size, 1);
