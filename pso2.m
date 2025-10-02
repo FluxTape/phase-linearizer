@@ -1,5 +1,5 @@
 % based on https://github.com/mschof/ParticleSwarmOptimization/blob/master/PSO1.m
-function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_max, max_iterations)
+function [ret, ret_start, ret_best_costs] = pso2(cf, nr_variables, var_min, var_max, max_iterations)
 
     %% Problem Definition
     % nr_variables                          % Number of variables unknown (part of the decision)
@@ -8,13 +8,10 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
     % var_max                               % Upper bound of decision space
   
     %% Parameter Adjustment
-    swarm_size = 700;                       % Swarm size (number of particles)
-    w = 1;                                  % Inertia coefficient                      
-    w_damp = 0.987;                          % damping of inertia coefficient, lower = faster damping
-    c1 = 2;                                 % Cognitive acceleration coefficient (c1 + c2 = 4)
-    c2 = 2;                                 % Social acceleration coefficient (c1 + c2 = 4)
-
-    sort_by_theta = false;
+    swarm_size = 40;                       % Swarm size (number of particles)
+    c1 = 0.7;                               % self confidence
+    c2 = 1.43;                              % cmax, confidence in others
+    K = 3;                                  % number of informants
   
     %% Init
     template_particle.position = [];
@@ -41,13 +38,6 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
   
       % Initiliaze velocity to the 0 vector
       particles(i).velocity = zeros(variable_size);
-
-      % Experiment: sort by theta
-      if (sort_by_theta)
-        [ps, vs] = sort_position_and_velocity(particles(i).position, particles(i).velocity); 
-        particles(i).position = ps;
-        particles(i).velocity = vs;
-      endif
   
       % Evaluate the current cost
       particles(i).cost = cf(particles(i).position);
@@ -67,9 +57,7 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
     % Best cost at each iteration
     best_costs = zeros(max_iterations, 1);
   
-  
     %% PSO Loop
-  
     for iteration=1:max_iterations
   
       for i=1:swarm_size
@@ -79,9 +67,22 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
         r2 = rand(variable_size);
   
         % Update velocity
-        particles(i).velocity = (w * particles(i).velocity) ...
-          + (c1 * r1 .* (particles(i).best.position - particles(i).position)) ...
-          + (c2 * r2 .* (global_best.position - particles(i).position));
+        informant_idxs = rand(K)' * swarm_size;
+        other_best_position = [];
+        other_best_cost = inf;
+        for h = 1:numel(informant_idxs)
+          idx = max(1, cast(informant_idxs(h), "int32"));
+          other_position = particles(idx).best.position;
+          other_cost = particles(idx).best.cost;
+          if (other_cost < other_best_cost)
+            other_best_position = other_position;
+            other_best_cost = other_cost;
+          endif
+        endfor
+
+        particles(i).velocity = ( c1 * particles(i).velocity) ...
+          + (c2 * r1 .* (particles(i).best.position - particles(i).position)) ...
+          + (c2 * r2 .* (other_best_position - particles(i).position));
   
         % Update position
         particles(i).position = particles(i).position + particles(i).velocity;
@@ -96,13 +97,6 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
             particles(i).velocity(k) = -particles(i).velocity(k); 
           endif
         endfor
-
-        % Experiment: sort by theta
-        if (sort_by_theta)
-          [ps, vs] = sort_position_and_velocity(particles(i).position, particles(i).velocity); 
-          particles(i).position = ps;
-          particles(i).velocity = vs;
-        endif
   
         % Update cost
         particles(i).cost = cf(particles(i).position);
@@ -127,9 +121,6 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
   
       % Display information for this iteration
       % disp(["Iteration " num2str(iteration) ": best cost = " num2str(best_costs(iteration))]);
-  
-      % Damp w
-      w = w * w_damp;
 
       if (iteration == 1)
         ret_start = global_best.position;
@@ -144,24 +135,3 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
     ret_best_costs = best_costs';
   
   endfunction
-
-function [s_position, s_velocity] = sort_position_and_velocity(position, velocity)
-    n = numel(position);
-    thetas = [];
-    for i = 1:2:n
-      thetas(end+1, 1) = position(i);
-      thetas(end, 2)   = position(i+1);
-      thetas(end, 3)   = velocity(i);
-      thetas(end, 4)   = velocity(i+1);
-    endfor
-    [s, idx] = sortrows(thetas, 2);
-    s_position = [];
-    s_velocity = [];
-    n1 = size(s)(1);
-    for k = 1:n1
-        s_position(end+1) = s(k, 1);
-        s_position(end+1) = s(k, 2);
-        s_velocity(end+1) = s(k, 3);
-        s_velocity(end+1) = s(k, 4);
-    endfor
-endfunction

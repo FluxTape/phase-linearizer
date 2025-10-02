@@ -47,7 +47,7 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
             var_max(end+1) = r_max;
             var_max(end+1) = pi;
         endfor
-        [opt, opt_start, best_errs] = pso(err_func, order*2, var_min, var_max, iterations);
+        [opt, opt_start, best_errs] = pso2(err_func, order*2, var_min, var_max, iterations);
         var_vals_start = opt_start;
     endswitch
     
