@@ -61,7 +61,7 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
         best_errs = []
         best_opt_err = inf;
         for i_ = 1:10
-            [opt_i, opt_start_i, best_errs_i] = pso2(err_func, order*2, var_min, var_max, iterations);
+            [opt_i, opt_start_i, best_errs_i] = pso_k(err_func, order*2, var_min, var_max, iterations);
             best_errs(:, i_) = best_errs_i(:);
             if (best_errs_i(end) < best_opt_err)
                 best_opt_err = best_errs_i(end);

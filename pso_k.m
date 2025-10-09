@@ -1,5 +1,5 @@
 % based on https://github.com/mschof/ParticleSwarmOptimization/blob/master/PSO1.m
-function [ret, ret_start, ret_best_costs] = pso2(cf, nr_variables, var_min, var_max, max_iterations)
+function [ret, ret_start, ret_best_costs] = pso_k(cf, nr_variables, var_min, var_max, max_iterations)
 
     %% Problem Definition
     % nr_variables                          % Number of variables unknown (part of the decision)
