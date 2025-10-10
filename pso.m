@@ -8,11 +8,12 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
     % var_max                               % Upper bound of decision space
   
     %% Parameter Adjustment
-    swarm_size = 500;                       % Swarm size (number of particles)
-    w = 1;                                  % Inertia coefficient                      
-    w_damp = 0.987;                          % damping of inertia coefficient, lower = faster damping
-    c1 = 2;                                 % Cognitive acceleration coefficient (c1 + c2 = 4)
-    c2 = 2;                                 % Social acceleration coefficient (c1 + c2 = 4)
+    swarm_size = 700;                       % Swarm size (number of particles)
+    c1 = 0.95;                               % Inertia coefficient
+    w = 1;                                 % initally no damping: w=1
+    w_damp = 0.99;                          % damping of inertia coefficient, lower = faster damping
+    c2 = 1.43;                              % Cognitive acceleration coefficient (c1 + c2 = 4)
+    c3 = 1.43;                              % Social acceleration coefficient (c1 + c2 = 4)
 
     sort_by_theta = false;
   
@@ -41,6 +42,17 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
   
       % Initiliaze velocity to the 0 vector
       particles(i).velocity = zeros(variable_size);
+
+      % Initiliaze with random velocity
+      %velocity = [];
+      %for k = 1:nr_variables
+      %  d = var_max(k) - var_min(k);
+      %  % at most, particles should move no faster than half the search space per iteration
+      %  % velocities can be positive and negative
+      %  velocity(k) = d*(rand(1)-0.5); 
+      %endfor
+      %particles(i).velocity = velocity;
+      % TODO: velocity limit??? -------------------------------------------------------------------------
 
       % Experiment: sort by theta
       if (sort_by_theta)
@@ -72,16 +84,18 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
   
     for iteration=1:max_iterations
   
+      iteration_best_cost = inf;
       for i=1:swarm_size
   
         % Initialize two random vectors
         r1 = rand(variable_size);
         r2 = rand(variable_size);
+        r3 = rand(variable_size);
   
-        % Update velocity
-        particles(i).velocity = (w * particles(i).velocity) ...
-          + (c1 * r1 .* (particles(i).best.position - particles(i).position)) ...
-          + (c2 * r2 .* (global_best.position - particles(i).position));
+        % Update velocity %
+        particles(i).velocity = (c1 * w * (r1 * 0.5 + 0.75) .* particles(i).velocity) ...
+          + (c1 * r2 .* (particles(i).best.position - particles(i).position)) ...
+          + (c2 * r3 .* (global_best.position - particles(i).position));
   
         % Update position
         particles(i).position = particles(i).position + particles(i).velocity;
@@ -106,6 +120,12 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
   
         % Update cost
         particles(i).cost = cf(particles(i).position);
+
+        % Update best cost of iteration
+        particles(i).cost = cf(particles(i).position);
+        if (particles(i).cost < iteration_best_cost)
+          iteration_best_cost = particles(i).cost;
+        endif
   
         % Update local best (and maybe global best) if current cost is better
         if (particles(i).cost < particles(i).best.cost)
@@ -123,7 +143,8 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
       endfor
   
       % Get best value
-      best_costs(iteration) = global_best.cost;
+      %best_costs(iteration) = global_best.cost;
+      best_costs(iteration) = iteration_best_cost;
   
       % Display information for this iteration
       % disp(["Iteration " num2str(iteration) ": best cost = " num2str(best_costs(iteration))]);

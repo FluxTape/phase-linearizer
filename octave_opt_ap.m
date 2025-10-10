@@ -38,7 +38,7 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
     case 2
         title_txt = sprintf("order=%d  algo=random-con  iterations=%d", order, iterations);
         [opt, var_vals_start, best_errs] = search_full_grid_random_bounded(err_func, order, iterations, w_start, w_end);
-    case 5
+    case 3
         title_txt = sprintf("order=%d  algo=pso  iterations=%d", order, iterations);
         var_min = zeros(1, order*2);
         r_max = 1 - 1e-3;
