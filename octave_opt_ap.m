@@ -78,7 +78,7 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
     if (!strcmp(output_path, "none"))
         disp("saving results to file")
         disp(output_path)
-        csv_output = [e_min, numel(opt), opt, numel(best_errs), best_errs]
+        csv_output = [e_min, algo, numel(opt), opt, numel(best_errs), best_errs]
         dlmwrite(output_path, csv_output, "-append")
     endif
 
