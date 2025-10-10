@@ -40,10 +40,12 @@ function g = rm_jumps(v)
     g = v;
 endfunction
 
-data_str   = fread( stdin, 'char' );
-data_str   = char( data_str.' );
-str_tokens = strsplit( data_str );
-tokens     = cellfun( @str2double, str_tokens );
+data_str    = fread( stdin, 'char' );
+data_str    = char( data_str.' );
+str_tokens  = strsplit( data_str );
+output_path = str_tokens{1}
+tokens = cellfun( @str2double, str_tokens );
+tokens = tokens(2:end);
 if isnan(tokens(end))
     tokens = tokens(1:end-1);
 endif
@@ -143,6 +145,6 @@ if (show_graph)
 endif
 
 output_precision(16);
-[opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, grd_ref, err_weights, show_graph);
+[opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, grd_ref, err_weights, show_graph, output_path);
 disp("final opt:");
 disp([opt e_min]');

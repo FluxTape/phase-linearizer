@@ -32,6 +32,10 @@ fn range_0_to_1(s: &str) -> Result<f64, String> {
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Cli {
+    /// output results to file
+    #[arg(short = 'f', long)]
+    output: Option<String>,
+
     /// minimum frequency (normalised 0.0 to 1.0)
     #[arg(short = 'n', long, default_value_t = 0.0, value_parser=range_0_to_1, allow_negative_numbers=true)]
     wmin: f64,
@@ -302,6 +306,7 @@ fn main() -> Result<()> {
         let mut oct_stdin = octave.stdin.take().ok_or(anyhow!("failed to get stdin"))?;
         let mut writer = BufWriter::new(&mut oct_stdin);
         let octave_args = [
+            /* 00 */ args.output.unwrap_or_else(|| "none".to_string()),
             /* 01 */ args.wmin.to_string(),
             /* 02 */ args.wmax.to_string(),
             /* 03 */ args.points.to_string(),

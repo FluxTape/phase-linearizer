@@ -1,5 +1,5 @@
 % 0 <= w <= 1
-function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, gradient_ref, err_weights, show_plot)
+function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, gradient_ref, err_weights, show_plot, output_path)
     % w_points = numel(gradient_ref)
     w = linspace(w_start, w_end, w_points_internal);
     gradient_ref = refit_points(gradient_ref, w_start, w_end, w_points_internal);
@@ -74,6 +74,13 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
     e_start = err_func(var_vals_start)
     e_fmin = err_func(opt)
     e_min = e_fmin;
+
+    if (!strcmp(output_path, "none"))
+        disp("saving results to file")
+        disp(output_path)
+        csv_output = [e_min, numel(opt), opt, numel(best_errs), best_errs]
+        dlmwrite(output_path, csv_output, "-append")
+    endif
 
     if (show_plot)
         if (numel(best_errs) > 0)

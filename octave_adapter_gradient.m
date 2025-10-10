@@ -5,12 +5,20 @@ pkg('load', 'optim');
 pkg('load', 'control');
 
 
-data_str   = fread( stdin, 'char' );
-data_str   = char( data_str.' );
-str_tokens = strsplit( data_str );
-tokens     = cellfun( @str2double, str_tokens );
+data_str    = fread( stdin, 'char' );
+data_str    = char( data_str.' );
+str_tokens  = strsplit( data_str );
+output_path = str_tokens{1}
+tokens = cellfun( @str2double, str_tokens );
+tokens = tokens(2:end);
 if isnan(tokens(end))
     tokens = tokens(1:end-1);
+endif
+err_at = find(isnan(tokens));
+if !isempty(err_at)
+    disp("failed to parse input at index:");
+    err_at
+    return
 endif
 
 w_start              = round(tokens(1))
@@ -60,6 +68,6 @@ else
 endif
 
 output_precision(16);
-[opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, gradient_ref, err_weights, show_graph);
+[opt, e_min] = octave_opt_ap(w_start, w_end, w_points_internal, order, algo, iterations, gradient_ref, err_weights, show_graph, output_path);
 disp("final opt:");
 disp([opt e_min]');
