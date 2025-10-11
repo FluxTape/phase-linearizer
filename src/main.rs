@@ -45,7 +45,7 @@ struct Cli {
     wmax: f64,
 
     /// number of internal sampling points
-    #[arg(short, long, default_value_t = 100)]
+    #[arg(short, long, default_value_t = 150)]
     points: u32,
 
     /// order of the linearization filter
