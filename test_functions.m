@@ -35,9 +35,11 @@ butterStopLP = h5_1 * h5_2
 
 bode(chebyLP, chebyHP, chebyBP, peakDip, butterStopLP, wb)
 subplot(2,1,1)
+title('Bode diagram of all test functions')
 ylim([-100 10])
-h = legend ("location", "northwest");
+h = legend ('Cheby LP', 'Cheby HP', 'Cheby BP', 'Peak & Dip', 'Butterworth Stop & LP                   ', "location", "northwest");
 legend (h, "location", "northwest")
+
 subplot(2,1,2)
-h = legend ("location", "northwest");
+h = legend ('Cheby LP', 'Cheby HP', 'Cheby BP', 'Peak & Dip', 'Butterworth Stop & LP                   ', "location", "northwest");
 legend (h, "location", "northwest")
