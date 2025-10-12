@@ -136,7 +136,7 @@ enum Algo {
     #[default]
     Pso,
     /// alternative particle swarm optimization - experiment
-    PsoK
+    PsoK,
 }
 
 impl Algo {
@@ -153,7 +153,7 @@ impl Algo {
 
 enum DataSource<'a> {
     Stdin,
-    Arg(Box<dyn Iterator<Item = &'a f64> + 'a>),
+    Arg(Box<dyn Iterator<Item = &'a str> + 'a>),
     File(&'a String),
 }
 
@@ -171,8 +171,8 @@ enum Mode {
         #[arg(short, long)]
         file: Option<String>,
 
-        /// data
-        data: Vec<f64>,
+        /// data as a string of space separated values
+        data: String,
     },
     /// numerator followed by denominator
     #[clap(visible_alias = "tf")]
@@ -181,11 +181,13 @@ enum Mode {
         #[command(flatten)]
         weights: WeightsFCA,
 
-        #[clap(long, value_parser, num_args = 1.., value_delimiter = ' ', allow_negative_numbers=true, required=true, visible_alias="num")]
-        numerator: Vec<f64>,
+        /// numerator coefficients as a string of space separated values
+        #[clap(long, required = true, visible_alias = "num")]
+        numerator: String,
 
-        #[clap(long, value_parser, num_args = 1.., value_delimiter = ' ', allow_negative_numbers=true, required=true, visible_alias="den")]
-        denominator: Vec<f64>,
+        /// denominator coefficients as a string of space separated values
+        #[clap(long, required = true, visible_alias = "den")]
+        denominator: String,
     },
     /// impulse response sample points
     #[clap(visible_alias = "imp")]
@@ -200,8 +202,8 @@ enum Mode {
         #[arg(short, long)]
         file: Option<String>,
 
-        /// sample rate followed by raw data
-        data: Vec<f64>,
+        /// sample rate followed by raw data as a string of space separated values
+        data: String,
     },
 }
 
@@ -218,17 +220,21 @@ impl Mode {
         match self {
             Mode::Gradient { file, data, .. } => match (file, !data.is_empty()) {
                 (Some(file), _) => DataSource::File(file),
-                (_, true) => DataSource::Arg(Box::new(data.iter())),
+                (_, true) => DataSource::Arg(Box::new(data.split_whitespace())),
                 _ => DataSource::Stdin,
             },
             Mode::TransferFunction {
                 numerator,
                 denominator,
                 ..
-            } => DataSource::Arg(Box::new(numerator.iter().chain(denominator.iter()))),
+            } => DataSource::Arg(Box::new(
+                numerator
+                    .split_whitespace()
+                    .chain(denominator.split_whitespace()),
+            )),
             Mode::ImpulseResponse { file, data, .. } => match (file, !data.is_empty()) {
                 (Some(file), _) => DataSource::File(file),
-                (_, true) => DataSource::Arg(Box::new(data.iter())),
+                (_, true) => DataSource::Arg(Box::new(data.split_whitespace())),
                 _ => DataSource::Stdin,
             },
         }
@@ -270,7 +276,10 @@ fn main() -> Result<()> {
             .map(str::parse::<f64>)
             .map(|f| f.map(|g| g.to_string()))
             .collect::<Result<Vec<_>, _>>()?,
-        DataSource::Arg(data) => data.map(f64::to_string).collect::<Vec<String>>(),
+        DataSource::Arg(data) => data
+            .map(str::parse::<f64>)
+            .map(|f| f.map(|g| g.to_string()))
+            .collect::<Result<Vec<_>, _>>()?,
         DataSource::File(file) => [file.clone()].into(),
     };
     let weights = if args.mode.weights_mode() == 2 {
