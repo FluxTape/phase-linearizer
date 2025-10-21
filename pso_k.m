@@ -9,11 +9,10 @@ function [ret, ret_start, ret_best_costs] = pso_k(cf, nr_variables, var_min, var
   
     %% Parameter Adjustment
     swarm_size = 40;                       % Swarm size (number of particles)
-    c1 = 0.7;                              % self confidence
-    w = 1;                                 % Inertia coefficient                      
+    w = 0.7;                               % self confidence, inertia coefficient                      
     w_damp = 0.98;                         % damping of inertia coefficient, lower = faster damping
-    c2 = 1.43;                             % cmax, confidence in own best position others
-    c3 = 1.43;                             % cmax, confidence in others
+    c1 = 1.43;                             % cmax, confidence in own best position others
+    c2 = 1.43;                             % cmax, confidence in others
     K = 3;                                 % number of informants
   
     %% Init
@@ -79,12 +78,7 @@ function [ret, ret_start, ret_best_costs] = pso_k(cf, nr_variables, var_min, var
       iteration_best_cost = inf;
       for i=1:swarm_size
   
-        % Initialize two random vectors
-        r1 = rand(variable_size);
-        r2 = rand(variable_size);
-        r3 = rand(variable_size);
-  
-        % Update velocity
+        % Get informants best positions
         informant_idxs = 1 + floor(rand(K)' * swarm_size);
         other_best_position = [];
         other_best_cost = inf;
@@ -98,9 +92,15 @@ function [ret, ret_start, ret_best_costs] = pso_k(cf, nr_variables, var_min, var
           endif
         endfor
 
-        particles(i).velocity = ( c1 * w * (r1 * 0.5 + 0.75) .* particles(i).velocity) ...
-          + (c2 * r1 .* (particles(i).best.position - particles(i).position)) ...
-          + (c3 * r2 .* (other_best_position - particles(i).position));
+        % Initialize two random vectors
+        r0 = rand(variable_size);
+        r1 = rand(variable_size);
+        r2 = rand(variable_size);
+
+        % Update velocity
+        particles(i).velocity = ( w * (r0 * 0.5 + 0.75) .* particles(i).velocity) ...
+          + (c1 * r1 .* (particles(i).best.position - particles(i).position)) ...
+          + (c2 * r2 .* (other_best_position - particles(i).position));
   
         % Update position
         particles(i).position = particles(i).position + particles(i).velocity;

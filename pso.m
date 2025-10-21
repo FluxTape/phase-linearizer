@@ -9,11 +9,10 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
   
     %% Parameter Adjustment
     swarm_size = 700;                       % Swarm size (number of particles)
-    c1 = 1.0;                               % Inertia coefficient
     w = 1;                                 % initally no damping: w=1
     w_damp = 0.99;                          % damping of inertia coefficient, lower = faster damping
-    c2 = 1.43;                              % Cognitive acceleration coefficient (c1 + c2 = 4)
-    c3 = 1.43;                              % Social acceleration coefficient (c1 + c2 = 4)
+    c1 = 1.43;                              % Cognitive acceleration coefficient (c1 + c2 = 4)
+    c2 = 1.43;                              % Social acceleration coefficient (c1 + c2 = 4)
 
     sort_by_theta = false;
   
@@ -88,14 +87,14 @@ function [ret, ret_start, ret_best_costs] = pso(cf, nr_variables, var_min, var_m
       for i=1:swarm_size
   
         % Initialize two random vectors
+        r0 = rand(variable_size);
         r1 = rand(variable_size);
         r2 = rand(variable_size);
-        r3 = rand(variable_size);
   
-        % Update velocity %* (r1 * 0.5 + 0.75)
-        particles(i).velocity = (c1 * w  .* particles(i).velocity) ...
-          + (c1 * r2 .* (particles(i).best.position - particles(i).position)) ...
-          + (c2 * r3 .* (global_best.position - particles(i).position));
+        % Update velocity %* (r0 * 0.5 + 0.75)
+        particles(i).velocity = (w .* particles(i).velocity) ...
+          + (c1 * r1 .* (particles(i).best.position - particles(i).position)) ...
+          + (c2 * r2 .* (global_best.position - particles(i).position));
 
         % TODO limit velocity (scale each dimension by the same factor to preserve direction)
   
