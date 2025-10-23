@@ -47,7 +47,7 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
             var_max(end+1) = r_max;
             var_max(end+1) = pi;
         endfor
-        [opt, opt_start, best_errs] = pso(err_func, order*2, var_min, var_max, iterations);
+        [opt, opt_start, best_errs, wi] = pso(err_func, order*2, var_min, var_max, iterations);
         var_vals_start = opt_start;
     otherwise
         title_txt = sprintf("order=%d  algo=pso  iterations=%d", order, iterations);
@@ -86,9 +86,11 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
         if (numel(best_errs) > 0)
             %% Plot results
             figure;
-            plot(best_errs, "LineWidth", 2);
+            iteration = 1:numel(best_errs);
+            plot(iteration, best_errs, "LineWidth", 2, iteration, wi);
             xlabel("iteration");
             ylabel("best err");
+            legend('lowest error of iteration', 'inertia w')
         endif
 
         g_opt1 = gr_ap_m_even(opt, w.*pi);

@@ -109,10 +109,10 @@ function [ret, ret_start, ret_best_costs] = pso_k(cf, nr_variables, var_min, var
         for k = 1:nr_variables
           if (particles(i).position(k) < var_min(k))
             particles(i).position(k) = var_min(k);
-            particles(i).velocity(k) = -particles(i).velocity(k); 
+            particles(i).velocity(k) = -particles(i).velocity(k) * 0.5; 
           elseif (particles(i).position(k) > var_max(k))
             particles(i).position(k) = var_max(k);
-            particles(i).velocity(k) = -particles(i).velocity(k); 
+            particles(i).velocity(k) = -particles(i).velocity(k) * 0.5; 
           endif
         endfor
   
