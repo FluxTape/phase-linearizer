@@ -4,8 +4,8 @@ warning('off','Octave:shadowed-function')
 pkg('load', 'statistics');
 
 
-filename = "pso_tuning_v1.csv"
-experiment = "PSO tuning v1"
+filename = "pso_tuning_flat075.csv"
+experiment = "PSO tuning v1: flat 0.75"
 data = csvread(filename);
 s_data = size(data)
 
