@@ -61,12 +61,17 @@ case 4
     algoname = "pso-k";
 endswitch
 
-plot(med, 'color', 'k')
+max_emin = max(e_min)
+avg_emin = mean(e_min)
+median_emin = median(e_min)
+min_emin = min(e_min)
+
+plot(med, 'color', 'k', 'lineWidth', 2)
 hold on
 boxplot (pruned_data, 'Labels', labels);
 ylabel("Error")
 xlabel("Iterations")
-title(sprintf("Experiment=%s, Algorithm=%s, runs=%d", experiment, algoname, size(pruned_data)(1)))
+title(sprintf("Experiment=%s, Algorithm=%s, runs=%d, median min err=%d", experiment, algoname, size(pruned_data)(1), median_emin))
 ylim([0, 3])
 hold off
 
