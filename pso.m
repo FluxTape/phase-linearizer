@@ -9,8 +9,8 @@ function [ret, ret_start, ret_best_costs, ret_wi] = pso(cf, nr_variables, var_mi
   
     %% Parameter Adjustment
     swarm_size = 500;                       % Swarm size (number of particles)
-    w = 1.0;                                % initally no damping: w=1
-    w_damp = 0.998;                         % damping of inertia coefficient, lower = faster damping
+    w = 0.75;                                % initally no damping: w=1
+    w_damp = 1.0;                         % damping of inertia coefficient, lower = faster damping
     c1 = 1.43;                              % Cognitive acceleration coefficient (c1 + c2 = 4)
     c2 = 1.43;                              % Social acceleration coefficient (c1 + c2 = 4)
     %w_fun_start = 0.95

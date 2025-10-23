@@ -19,3 +19,7 @@ octave-workspace
 # Added by cargo
 
 /target
+
+
+# other
+*.csv
