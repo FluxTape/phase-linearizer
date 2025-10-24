@@ -13,9 +13,9 @@ function [ret, ret_start, ret_best_costs, ret_wi] = pso(cf, nr_variables, var_mi
     w_damp = 0.998;                         % damping of inertia coefficient, lower = faster damping
     c1 = 1.43;                              % Cognitive acceleration coefficient (c1 + c2 = 4)
     c2 = 1.43;                              % Social acceleration coefficient (c1 + c2 = 4)
-    %w_fun_start = 0.95
-    %w_fun_end = 0.45
-    %w_fun = @(iteration) w_fun_start - (w_fun_start - w_fun_end) * ((iteration-1)/(max_iterations-1))^2 
+    w_fun_start = 0.95
+    w_fun_end = 0.45
+    w_fun = @(iteration) w_fun_start - (w_fun_start - w_fun_end) * ((iteration-1)/(max_iterations-1))^2 
     %w_fun_start = 0.95
     %w_fun_end = 0.55
     %w_fun = @(iteration) w_fun_start - (w_fun_start - w_fun_end) * ((iteration-1)/(max_iterations-1))
@@ -90,7 +90,7 @@ function [ret, ret_start, ret_best_costs, ret_wi] = pso(cf, nr_variables, var_mi
     for iteration=1:max_iterations
 
       % experiment: use w_fun to set w
-      %w = w_fun(iteration)
+      w = w_fun(iteration)
   
       iteration_best_cost = inf;
       for i=1:swarm_size

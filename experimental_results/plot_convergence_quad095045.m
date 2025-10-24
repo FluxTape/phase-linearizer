@@ -4,8 +4,8 @@ warning('off','Octave:shadowed-function')
 pkg('load', 'statistics');
 
 
-filename = "pso_tuning_exp0998.csv"
-experiment = "PSO tuning v2: exp 0.998"
+filename = "pso_tuning_quad095045.csv"
+experiment = "PSO tuning v4: quad 095-045"
 data = csvread(filename);
 s_data = size(data)
 
@@ -68,7 +68,7 @@ min_emin = min(e_min)
 
 
 iter = 1:num_errs(1);
-wi = arrayfun(@(iteration) 0.998^(iteration-1), iter);
+wi = arrayfun(@(iteration) 0.95 - 0.5*((iteration-1)/(300-1))^2, iter);
 [ax, h1, h2] = plotyy(1:numel(med), med, iter/10, wi);
 set (h1, "color", "k")
 set (h1, "linewidth", 1.5)
