@@ -87,5 +87,5 @@ set(ax, "xticklabel", []);
 hold on
 boxplot (pruned_data, 'Labels', labels);
 xlabel("Iterations")
-title(sprintf("Experiment=%s, runs=%d, median min err=%d", experiment, algoname, size(pruned_data)(1), median_emin))
+title(sprintf("Experiment=%s, runs=%d, median min err=%d", experiment, size(pruned_data)(1), median_emin))
 hold off
