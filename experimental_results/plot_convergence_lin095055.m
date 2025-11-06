@@ -5,7 +5,7 @@ pkg('load', 'statistics');
 
 
 filename = "pso_tuning_lin095055.csv"
-experiment = "PSO tuning v3: lin 095-055"
+experiment = "PSO tuning v3, Cheby BP"
 data = csvread(filename);
 s_data = size(data)
 
@@ -88,6 +88,6 @@ set(ax, "xticklabel", []);
 hold on
 boxplot (pruned_data, 'Labels', labels);
 xlabel("Iterations")
-title(sprintf("Experiment=%s, runs=%d, median min err=%d", experiment, size(pruned_data)(1), median_emin))
+title(sprintf("%s, runs=%d, median err=%d", experiment, size(pruned_data)(1), median_emin))
 hold off
 
