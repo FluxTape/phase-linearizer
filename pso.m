@@ -1,5 +1,5 @@
 % based on https://github.com/mschof/ParticleSwarmOptimization/blob/master/PSO1.m
-function [ret, ret_start, ret_best_costs, ret_wi] = pso(cf, nr_variables, var_min, var_max, max_iterations)
+function [ret, ret_start, ret_best_costs, ret_wi, ret_avg_vel] = pso(cf, nr_variables, var_min, var_max, max_iterations)
 
     %% Problem Definition
     % nr_variables                          % Number of variables unknown (part of the decision)
@@ -13,12 +13,12 @@ function [ret, ret_start, ret_best_costs, ret_wi] = pso(cf, nr_variables, var_mi
     w_damp = 0.998;                         % damping of inertia coefficient, lower = faster damping
     c1 = 1.43;                              % Cognitive acceleration coefficient (c1 + c2 = 4)
     c2 = 1.43;                              % Social acceleration coefficient (c1 + c2 = 4)
-    %w_fun_start = 0.95
-    %w_fun_end = 0.45
-    %w_fun = @(iteration) w_fun_start - (w_fun_start - w_fun_end) * ((iteration-1)/(max_iterations-1))^2 
     w_fun_start = 0.95
-    w_fun_end = 0.55
-    w_fun = @(iteration) w_fun_start - (w_fun_start - w_fun_end) * ((iteration-1)/(max_iterations-1))
+    w_fun_end = 0.35
+    w_fun = @(iteration) w_fun_start - (w_fun_start - w_fun_end) * ((iteration-1)/(max_iterations-1))^2 
+    %w_fun_start = 0.95
+    %w_fun_end = 0.55
+    %w_fun = @(iteration) w_fun_start - (w_fun_start - w_fun_end) * ((iteration-1)/(max_iterations-1))
 
     sort_by_theta = false;
   
@@ -84,6 +84,7 @@ function [ret, ret_start, ret_best_costs, ret_wi] = pso(cf, nr_variables, var_mi
     % Best cost at each iteration
     best_costs = [];
     wi = [];
+    avg_vel = [];
   
     %% PSO Loop
   
@@ -156,6 +157,14 @@ function [ret, ret_start, ret_best_costs, ret_wi] = pso(cf, nr_variables, var_mi
       %best_costs(iteration) = global_best.cost;
       best_costs(iteration) = iteration_best_cost;
       wi(iteration) = w;
+
+      % calculate average velocity of particles
+      vsum = 0;
+      for i=1:swarm_size
+        vsum = vsum + mean(abs(particles(i).velocity));
+      endfor
+      vsum = vsum / swarm_size;
+      avg_vel(iteration) = mean(vsum);
   
       % Display information for this iteration
       % disp(["Iteration " num2str(iteration) ": best cost = " num2str(best_costs(iteration))]);
@@ -175,6 +184,7 @@ function [ret, ret_start, ret_best_costs, ret_wi] = pso(cf, nr_variables, var_mi
     ret = global_best.position;
     ret_best_costs = best_costs;
     ret_wi = wi;
+    ret_avg_vel = avg_vel;
   
   endfunction
 
