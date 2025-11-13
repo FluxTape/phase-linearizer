@@ -4,8 +4,8 @@ warning('off','Octave:shadowed-function')
 pkg('load', 'statistics');
 
 
-filename = "pso_tuning_quad095035.csv"
-experiment = "PSO v4, Cheby BP"
+filename = "pso_tuning_flat075_s50.csv"
+experiment = "PSO v5, Cheby BP"
 data = csvread(filename);
 s_data = size(data)
 
@@ -66,9 +66,8 @@ avg_emin = mean(e_min)
 median_emin = median(e_min)
 min_emin = min(e_min)
 
-
 iter = 1:num_errs(1);
-wi = arrayfun(@(iteration) 0.95 - (0.95-0.35)*((iteration-1)/(300-1))^2, iter);
+wi = arrayfun(@(iteration) 0.75, iter);
 [ax, h1, h2] = plotyy(1:numel(med), med, iter/10, wi);
 set (h1, "color", "k")
 set (h1, "linewidth", 1.5)
@@ -90,4 +89,3 @@ boxplot (pruned_data, 'Labels', labels);
 xlabel("Iterations")
 title(sprintf("%s, runs=%d, median err=%d", experiment, size(pruned_data)(1), median_emin))
 hold off
-

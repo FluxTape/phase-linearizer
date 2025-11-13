@@ -13,12 +13,12 @@ function [ret, ret_start, ret_best_costs, ret_wi, ret_avg_vel] = pso(cf, nr_vari
     w_damp = 0.998;                         % damping of inertia coefficient, lower = faster damping
     c1 = 1.43;                              % Cognitive acceleration coefficient (c1 + c2 = 4)
     c2 = 1.43;                              % Social acceleration coefficient (c1 + c2 = 4)
-    w_fun_start = 0.95
-    w_fun_end = 0.35
-    w_fun = @(iteration) w_fun_start - (w_fun_start - w_fun_end) * ((iteration-1)/(max_iterations-1))^2 
     %w_fun_start = 0.95
-    %w_fun_end = 0.55
-    %w_fun = @(iteration) w_fun_start - (w_fun_start - w_fun_end) * ((iteration-1)/(max_iterations-1))
+    %w_fun_end = 0.35
+    %w_fun = @(iteration) w_fun_start - (w_fun_start - w_fun_end) * ((iteration-1)/(max_iterations-1))^2 
+    w_fun_start = 0.95
+    w_fun_end = 0.55
+    w_fun = @(iteration) w_fun_start - (w_fun_start - w_fun_end) * ((iteration-1)/(max_iterations-1))
 
     sort_by_theta = false;
   
