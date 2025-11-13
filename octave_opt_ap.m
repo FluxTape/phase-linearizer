@@ -58,17 +58,8 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
             var_max(end+1) = r_max;
             var_max(end+1) = pi;
         endfor
-        best_errs = []
-        best_opt_err = inf;
-        for i_ = 1:10
-            [opt_i, opt_start_i, best_errs_i] = pso_k(err_func, order*2, var_min, var_max, iterations);
-            best_errs(:, i_) = best_errs_i(:);
-            if (best_errs_i(end) < best_opt_err)
-                best_opt_err = best_errs_i(end);
-                opt = opt_i;
-                var_vals_start = opt_start_i;
-            endif
-        endfor
+        [opt, opt_start, best_errs, wi, avg_vel] = pso_k(err_func, order*2, var_min, var_max, iterations);
+        var_vals_start = opt_start;
     endswitch
     
     e_start = err_func(var_vals_start)
