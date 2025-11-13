@@ -68,7 +68,7 @@ min_emin = min(e_min)
 
 
 iter = 1:num_errs(1);
-wi = arrayfun(@(iteration) 0.99798^(iteration-1), iter);
+wi = arrayfun(@(iteration) 0.96^(iteration-1), iter);
 [ax, h1, h2] = plotyy(1:numel(med), med, iter/10, wi);
 set (h1, "color", "k")
 set (h1, "linewidth", 1.5)

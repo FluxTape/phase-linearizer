@@ -67,7 +67,7 @@ median_emin = median(e_min)
 min_emin = min(e_min)
 
 iter = 1:num_errs(1);
-wi = arrayfun(@(iteration) 0.75, iter);
+wi = arrayfun(@(iteration) 0.3, iter);
 [ax, h1, h2] = plotyy(1:numel(med), med, iter/10, wi);
 set (h1, "color", "k")
 set (h1, "linewidth", 1.5)
