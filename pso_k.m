@@ -9,8 +9,8 @@ function [ret, ret_start, ret_best_costs, ret_wi, ret_avg_vel] = pso_k(cf, nr_va
   
     %% Parameter Adjustment
     swarm_size = 50;                       % Swarm size (number of particles)
-    w = 1.0;                               % self confidence, inertia coefficient                      
-    w_damp = 0.998;                         % damping of inertia coefficient, lower = faster damping
+    w = 0.3;                               % self confidence, inertia coefficient                      
+    w_damp = 1.0;                         % damping of inertia coefficient, lower = faster damping
     c1 = 1.43;                             % cmax, confidence in own best position others
     c2 = 1.43;                             % cmax, confidence in others
     K = 5;                                 % number of informants
