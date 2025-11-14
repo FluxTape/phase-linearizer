@@ -49,14 +49,14 @@ function [ret, ret_start, ret_best_costs, ret_wi, ret_avg_vel] = pso(cf, nr_vari
       particles(i).velocity = zeros(variable_size);
 
       % Initiliaze with random velocity
-      velocity = [];
-      for k = 1:nr_variables
-        d = var_max(k) - var_min(k);
-        % at most, particles should move no faster than half the search space per iteration
-        % velocities can be positive and negative
-        velocity(k) = d*(rand(1)-0.5); 
-      endfor
-      particles(i).velocity = velocity;
+      %velocity = [];
+      %for k = 1:nr_variables
+      %  d = var_max(k) - var_min(k);
+      %  % at most, particles should move no faster than half the search space per iteration
+      %  % velocities can be positive and negative
+      %  velocity(k) = d*(rand(1)-0.5); 
+      %endfor
+      %particles(i).velocity = velocity;
       % TODO: velocity limit??? -------------------------------------------------------------------------
 
       % Experiment: sort by theta
