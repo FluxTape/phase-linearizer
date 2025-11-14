@@ -5,7 +5,7 @@ pkg('load', 'statistics');
 
 
 filename = "pso_tuning_exp0998_s50.csv"
-experiment = "PSO v6, Cheby BP"
+experiment = "PSO v2-S, Cheby BP"
 data = csvread(filename);
 s_data = size(data)
 
