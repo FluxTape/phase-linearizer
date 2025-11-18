@@ -26,9 +26,14 @@ a4 = [1.0000   -0.9882    0.7910   -0.3476    0.1694]
 peakDip = tf(b4, a4, pi)
 
 % butter bandstop
-[b5_1, a5_1] = butter(4, [0.15, 0.5], 'stop')
+[b5_1, a5_1] = butter(4, [0.1, 0.5], 'stop')
 h5_1 = tf(b5_1, a5_1, pi)
-[b5_2, a5_2] = butter(3, 0.6)
+%[b5_2, a5_2] = butter(3, 0.6)
+%h5_2 = tf(b5_2, a5_2, pi)
+%butterStopLP = h5_1 * h5_2
+%[b5, a5] = tfdata(butterStopLP, 'v')
+
+[b5_2, a5_2] = bilinear([0 0 0.25],[1 0.0636 0.25], pi)
 h5_2 = tf(b5_2, a5_2, pi)
 butterStopLP = h5_1 * h5_2
 [b5, a5] = tfdata(butterStopLP, 'v')
