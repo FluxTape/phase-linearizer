@@ -49,7 +49,7 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
         endfor
         [opt, opt_start, best_errs, wi, avg_vel] = pso(err_func, order*2, var_min, var_max, iterations);
         var_vals_start = opt_start;
-    otherwise
+    case 4
         title_txt = sprintf("order=%d  algo=pso  iterations=%d", order, iterations);
         var_min = zeros(1, order*2);
         r_max = 1 - 1e-3;
@@ -60,6 +60,31 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
         endfor
         [opt, opt_start, best_errs, wi, avg_vel] = pso_k(err_func, order*2, var_min, var_max, iterations);
         var_vals_start = opt_start;
+    case 5
+        title_txt = sprintf("order=%d  algo=pso-m  iterations=%d", order, iterations);
+        var_min = zeros(1, order*2);
+        r_max = 1 - 1e-3;
+        var_max = [];
+        for i_ = 1:order
+            var_max(end+1) = r_max;
+            var_max(end+1) = pi;
+        endfor
+        min_err = inf;
+        for k = 1:10
+            [opt_, opt_start_, best_errs_, wi_, avg_vel_] = pso(err_func, order*2, var_min, var_max, iterations);
+            if (best_errs_(end) < min_err)
+                min_err = best_errs_(end)
+                opt = opt_;
+                opt_start = opt_start_;
+                best_errs = best_errs_;
+                wi = wi_;
+                avg_vel = avg_vel_;
+            endif
+        endfor
+        var_vals_start = opt_start;
+    otherwise
+        disp("ERR: unknown algorithm")
+        return
     endswitch
     
     e_start = err_func(var_vals_start)

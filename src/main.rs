@@ -137,6 +137,8 @@ enum Algo {
     Pso,
     /// alternative particle swarm optimization - experiment
     PsoK,
+    /// particle swarm optimization - minimum of 10 runs
+    PsoM,
 }
 
 impl Algo {
@@ -147,6 +149,7 @@ impl Algo {
             Algo::RandomCon => 2,
             Algo::Pso => 3,
             Algo::PsoK => 4,
+            Algo::PsoM => 5,
         }
     }
 }

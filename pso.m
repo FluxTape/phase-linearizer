@@ -8,7 +8,7 @@ function [ret, ret_start, ret_best_costs, ret_wi, ret_avg_vel] = pso(cf, nr_vari
     % var_max                               % Upper bound of decision space
   
     %% Parameter Adjustment
-    swarm_size = 500;                       % Swarm size (number of particles)
+    swarm_size = 50;                       % Swarm size (number of particles)
     w = 0.75;                                % initally no damping: w=1
     w_damp = 1.0;                         % damping of inertia coefficient, lower = faster damping
     c1 = 1.43;                              % Cognitive acceleration coefficient (c1 + c2 = 4)
