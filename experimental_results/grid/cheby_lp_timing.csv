@@ -1,0 +1,2 @@
+command,mean,stddev,median,user,system,min,max
+"./target/release/phase-linearizer -n 0.0 -x 0.6 -p 150 -o 6 -a grid -i 300 -f ./experimental_results/grid/cheby_lp.csv transfer-function --amp --num ""2.3447e-03   5.8262e-03   1.0160e-02   1.1842e-02   1.0160e-02   5.8262e-03   2.3447e-03"" --den ""1.000000  -3.207647 4.689690  -3.853772   1.857272  -0.493137   0.056098""",7.580753015340001,0.072935491731277,7.5747925164400005,7.460533800000002,0.06747965999999998,7.48626047444,7.69658230844
