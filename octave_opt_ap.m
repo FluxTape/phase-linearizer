@@ -32,12 +32,15 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
             endif
         endwhile
         best_errs = [];
+        wi = [];
     case 1
         title_txt = sprintf("order=%d  algo=random-unc  iterations=%d", order, iterations);
         [opt, var_vals_start, best_errs] = search_full_grid_random(err_func, order, iterations, w_start, w_end);
+        wi = [];
     case 2
         title_txt = sprintf("order=%d  algo=random-con  iterations=%d", order, iterations);
         [opt, var_vals_start, best_errs] = search_full_grid_random_bounded(err_func, order, iterations, w_start, w_end);
+        wi = [];
     case 3
         title_txt = sprintf("order=%d  algo=pso  iterations=%d", order, iterations);
         var_min = zeros(1, order*2);
@@ -103,10 +106,16 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
             %% Plot results
             figure;
             iteration = 1:numel(best_errs);
-            plot(iteration, best_errs, "LineWidth", 2, iteration, wi, iteration, avg_vel);
+            if (numel(wi) > 0)
+                plot(iteration, best_errs, "LineWidth", 2, iteration, wi, iteration, avg_vel);
+                legend('lowest error of iteration', 'inertia w', 'average particle velocity')
+            else
+                plot(iteration, best_errs, "LineWidth", 2);
+                legend('lowest error of iteration')
+            endif
+            
             xlabel("iteration");
             ylabel("best err");
-            legend('lowest error of iteration', 'inertia w', 'average particle velocity')
         endif
 
         g_opt1 = gr_ap_m_even(opt, w.*pi);
