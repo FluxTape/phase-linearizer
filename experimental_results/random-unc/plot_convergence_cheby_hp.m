@@ -4,8 +4,8 @@ warning('off','Octave:shadowed-function')
 pkg('load', 'statistics');
 
 
-filename = "cheby_lp.csv"
-experiment = "random-unc, Cheby LP"
+filename = "cheby_hp.csv"
+experiment = "random-unc, Cheby HP"
 data = csvread(filename);
 s_data = size(data)
 

@@ -1,0 +1,2 @@
+command,mean,stddev,median,user,system,min,max
+"./target/release/phase-linearizer -n 0.6 -x 1.0 -p 100 -o 7 -a random-unc -i 300 -f ./experimental_results/random-unc/cheby_hp.csv transfer-function --amp --num ""0.0014    0.0009    0.0023   -0.0005    0.0005   -0.0023   -0.0009   -0.0014"" --den ""1.0000    4.5142    9.0512   10.3576    7.2715    3.1213    0.7567    0.0798""",42.6292416169,0.26791290002442036,42.515490402,42.48113209999999,0.07365922,42.3868892505,43.1445282495
