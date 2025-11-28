@@ -384,17 +384,21 @@ function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random_bo
             var_vals_start = var_vals;
         endif
 
-        [var_vals_opt, objf, cvg, outp] = fmincon(func,var_vals',[],[],[],[],lb,ub);
-        var_vals_opt = var_vals_opt';
+        try
+            [var_vals_opt, objf, cvg, outp] = fmincon(func,var_vals',[],[],[],[],lb,ub);
+            var_vals_opt = var_vals_opt';
 
-        if (is_stable(var_vals_opt))
-            err = func(var_vals_opt);
-            if (err < best_err)
-                best_err = err;
-                best_var_vals = var_vals_opt;
-                var_vals_start = var_vals;
+            if (is_stable(var_vals_opt))
+                err = func(var_vals_opt);
+                if (err < best_err)
+                    best_err = err;
+                    best_var_vals = var_vals_opt;
+                    var_vals_start = var_vals;
+                endif
             endif
-        endif
+        catch
+            printf ("fmincon failed: %s\n", lasterr)
+        end_try_catch
         best_errs(end+1) = best_err;
     endfor
 endfunction
