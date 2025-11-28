@@ -335,7 +335,14 @@ function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random(fu
     best_errs = []; % used for visualisation purposes only
     for i_ = 1:num_iterations
         var_vals = random_var_vals(n, r_min, r_max, theta_min, theta_max);
+        % make sure there is always at least one valid result
+        if (i_ == 1)
+            err = func(var_vals);
+            best_err = err;
+        endif
+        
         [var_vals_opt,ressquared,eflag,outputu] = fminunc(func,var_vals);
+
         if (is_stable(var_vals_opt))
             err = func(var_vals_opt);
             if (err < best_err)
@@ -366,7 +373,13 @@ function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random_bo
     ub
     best_errs = []; % used for visualisation purposes only
     for i_ = 1:num_iterations
-        var_vals = random_var_vals(n, r_min, r_max, theta_min, theta_max)
+        var_vals = random_var_vals(n, r_min, r_max, theta_min, theta_max);
+        % make sure there is always at least one valid result
+        if (i_ == 1)
+            err = func(var_vals);
+            best_err = err;
+        endif
+
         [var_vals_opt, objf, cvg, outp] = fmincon(func,var_vals',[],[],[],[],lb,ub);
         var_vals_opt = var_vals_opt';
 
