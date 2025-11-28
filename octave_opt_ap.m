@@ -339,8 +339,10 @@ function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random(fu
         if (i_ == 1)
             err = func(var_vals);
             best_err = err;
+            best_var_vals = var_vals;
+            var_vals_start = var_vals;
         endif
-        
+
         [var_vals_opt,ressquared,eflag,outputu] = fminunc(func,var_vals);
 
         if (is_stable(var_vals_opt))
@@ -378,6 +380,8 @@ function [best_var_vals, var_vals_start, best_errs] = search_full_grid_random_bo
         if (i_ == 1)
             err = func(var_vals);
             best_err = err;
+            best_var_vals = var_vals;
+            var_vals_start = var_vals;
         endif
 
         [var_vals_opt, objf, cvg, outp] = fmincon(func,var_vals',[],[],[],[],lb,ub);
