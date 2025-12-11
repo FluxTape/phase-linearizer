@@ -1,0 +1,2 @@
+command,mean,stddev,median,user,system,min,max
+"./target/release/phase-linearizer -n 0.0 -x 0.6 -p 150 -o 6 -a pso-m -i 300 -f ./experimental_results/pso-m/cheby_lp.csv transfer-function --amp --num ""2.3447e-03   5.8262e-03   1.0160e-02   1.1842e-02   1.0160e-02   5.8262e-03   2.3447e-03"" --den ""1.000000  -3.207647 4.689690  -3.853772   1.857272  -0.493137   0.056098""",50.58636625322,0.3032845844347436,50.581417660119996,50.45876817999999,0.06366217999999998,50.18851046812,51.14368881512
