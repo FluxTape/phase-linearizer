@@ -1,6 +1,6 @@
 import csv
 import statistics
-import traceback
+#import traceback
 
 def wrap_in_numprint(s: str) -> str:
     return "\\numprint{" + s + "}"
@@ -36,7 +36,7 @@ def get_err_vals(algo: str, test_function: str) -> (str, str, str, str):
             avg_error = f"{statistics.mean(e_min):.6f}"
             med_error = f"{statistics.median(e_min):.6f}"
             min_error = f"{min(e_min):.6f}"
-    except Exception as err:
+    except Exception:
         #print(traceback.format_exc())
         pass
     return (max_error, avg_error, med_error, min_error)
