@@ -52,6 +52,8 @@ function [max_emin, avg_emin, median_emin, min_emin] = plot_convergence_generic(
         algoname = "pso";
     case 4
         algoname = "pso-k";
+    case 5
+        algoname = "pso-m";
     endswitch
     algoname
 
