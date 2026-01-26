@@ -1,0 +1,1 @@
+This folder contains various scripts of experiments, not directly related to the main program
