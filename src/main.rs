@@ -149,7 +149,7 @@ impl Algo {
             Algo::RandomCon => 2,
             Algo::Pso => 3,
             Algo::PsoK => 4,
-            Algo::PsoM => 5,
+            Algo::PsoM => 5
         }
     }
 }
@@ -208,6 +208,16 @@ enum Mode {
         /// sample rate followed by raw data as a string of space separated values
         data: String,
     },
+    #[clap(visible_alias = "tf-fir")]
+    TransferFunctionFIR {
+        /// numerator coefficients as a string of space separated values
+        #[clap(long, required = true, visible_alias = "num")]
+        numerator: String,
+
+        /// denominator coefficients as a string of space separated values
+        #[clap(long, required = true, visible_alias = "den")]
+        denominator: String,
+    },
 }
 
 impl Mode {
@@ -216,6 +226,7 @@ impl Mode {
             Mode::Gradient { .. } => "./octave_adapter_gradient.m",
             Mode::TransferFunction { .. } => "./octave_adapter_tf.m",
             Mode::ImpulseResponse { .. } => "./octave_adapter_imp.m",
+            Mode::TransferFunctionFIR { .. } => "./octave_adapter_tf_fir.m"
         }
     }
 
@@ -240,6 +251,14 @@ impl Mode {
                 (_, true) => DataSource::Arg(Box::new(data.split_whitespace())),
                 _ => DataSource::Stdin,
             },
+            Mode::TransferFunctionFIR {
+                numerator,
+                denominator,
+            } => DataSource::Arg(Box::new(
+                numerator
+                    .split_whitespace()
+                    .chain(denominator.split_whitespace()),
+            )),
         }
     }
 
@@ -252,6 +271,7 @@ impl Mode {
             Mode::Gradient { weights, .. } => weights.to_usize(),
             Mode::TransferFunction { weights, .. } => weights.to_usize(),
             Mode::ImpulseResponse { weights, .. } => weights.to_usize(),
+            Mode::TransferFunctionFIR { .. } => 0,
         }
     }
 
@@ -260,6 +280,7 @@ impl Mode {
             Mode::Gradient { weights, .. } => weights.custom_weights(),
             Mode::TransferFunction { weights, .. } => weights.custom_weights(),
             Mode::ImpulseResponse { weights, .. } => weights.custom_weights(),
+            Mode::TransferFunctionFIR { .. } => None,
         }
     }
 }
@@ -363,23 +384,33 @@ fn main() -> Result<()> {
     let e_min = res
         .pop()
         .expect("res should always contain at least one element");
-    if res.len() & 1 == 1 {
-        // is odd
-        return Err(anyhow!("result parsing error: length is not even"));
-    }
 
-    //dbg!(&res);
-    let mut res_iter = res.into_iter();
-    let mut res_tuple = Vec::new();
-    while let (Some(r), Some(theta)) = (res_iter.next(), res_iter.next()) {
-        res_tuple.push((r, theta));
-    }
-    res_tuple.sort_by(|(_r1, t1), (_r2, t2)| t1.partial_cmp(t2).expect("should not contain NANs"));
+    match args.mode {
+        Mode::TransferFunctionFIR { .. } => {
+            println!("minimum error: {}", e_min);
+            println!("FIR coefficients:");
+            for coef in res{
+                println!("{:.16}", coef)
+            }
+        },
+        _ => {
+            if res.len() & 1 == 1 {
+                // is odd
+                return Err(anyhow!("result parsing error: length is not even"));
+            }
+            //dbg!(&res);
+            let mut res_iter = res.into_iter();
+            let mut res_tuple = Vec::new();
+            while let (Some(r), Some(theta)) = (res_iter.next(), res_iter.next()) {
+                res_tuple.push((r, theta));
+            }
+            res_tuple.sort_by(|(_r1, t1), (_r2, t2)| t1.partial_cmp(t2).expect("should not contain NANs"));
 
-    println!("minimum error: {}", e_min);
-    for (r, theta) in res_tuple {
-        println!("r: {:.16} theta: {:.16}", r, theta);
+            println!("minimum error: {}", e_min);
+            for (r, theta) in res_tuple {
+                println!("r: {:.16} theta: {:.16}", r, theta);
+            }
+        }
     }
-
     Ok(())
 }
