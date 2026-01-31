@@ -4,7 +4,10 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_points_internal, show_
     tf_pre = tf(num, den, 1) % TODO samplfe rate of pi instead? see octave_adapter_tf
 
     num_points = order
-    w = linspace(0, pi, num_points*10);
+    internal_point_target = 300
+    multiplier = ceil(internal_point_target/order)
+
+    w = linspace(0, pi, num_points*multiplier);
     [mag, pha, w] = bode(tf_pre, w);
 
     if (show_plot)
@@ -46,7 +49,9 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_points_internal, show_
         ylabel("Phase (deg)")
     endif
 
-    pha = downsample(pha, 10);
+    pha = decimate(pha, multiplier, 80, "fir");
+    %pha = decimate(pha, multiplier, 12, "iir");
+    %pha = downsample(pha, multiplier);
     w = linspace(0, pi, num_points);
     fresp = [];
     for n = 1:numel(w)
@@ -88,6 +93,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_points_internal, show_
 
 
     fir = fir .* window *2;
+    real_order = numel(fir)
 
     if (show_plot)
         figure 4
@@ -160,7 +166,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_points_internal, show_
     if (show_plot)
         figure 7
         plot(w_g/pi, g_pre, w_g/pi, g_fir, w_g/pi, g_com)
-        title(sprintf("Group Delay of FIR Filter, order=%d", order))
+        title(sprintf("Group Delay of FIR Filter, order=%d", real_order))
         xlabel("Normalized Frequency (×π rad/sample)")
         ylabel("Group Delay (samples)")
         legend("Input", "Compensation Filter", "Combined")
@@ -179,7 +185,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_points_internal, show_
 
         h = figure
         plot(w_n/pi, err)
-        title(sprintf("Group Delay Error with FIR Compensation Filter, order=%d, avg err=%d", order, avg_err))
+        title(sprintf("Group Delay Error with FIR Compensation Filter, order=%d, avg err=%d", real_order, avg_err))
         xlabel("Normalized Frequency (×π rad/sample)")
         ylabel("Error^2")
         waitfor(h);
