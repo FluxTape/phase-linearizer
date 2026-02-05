@@ -1,10 +1,10 @@
-function [opt, e_min] = octave_opt_fir(num, den, order, w_points_internal, show_plot)
+function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points_internal, err_weights, show_plot)
     %num = [0.0015   -0.0020    0.0002   -0.0009    0.0028   -0.0009    0.0002   -0.0020    0.0015]  
     %den = [1.0000   -2.7355    5.9780   -7.8335    8.5654   -6.3463    3.9239   -1.4513    0.4299]
     tf_pre = tf(num, den, 1) % TODO samplfe rate of pi instead? see octave_adapter_tf
 
     num_points = order
-    internal_point_target = 300
+    internal_point_target = 240
     multiplier = ceil(internal_point_target/order)
 
     w = linspace(0, pi, num_points*multiplier);
@@ -49,7 +49,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_points_internal, show_
         ylabel("Phase (deg)")
     endif
 
-    pha = decimate(pha, multiplier, 80, "fir");
+    pha = decimate(pha, multiplier, 70, "fir");
     %pha = decimate(pha, multiplier, 12, "iir");
     %pha = downsample(pha, multiplier);
     w = linspace(0, pi, num_points);
@@ -233,3 +233,34 @@ function target_delay = find_target_delay(w, pha_in)
     target_delay = k;
 endfunction
 
+function p_refit = refit_points(v, w_start, w_end, num_points_target)
+    % assume w range [0, 1]
+    nv = numel(v)
+    wx = linspace(0, 1, numel(v))
+    start_idx = 1;
+    for k = 1:numel(wx);
+        if (wx(k) > w_start)
+            start_idx = k;
+            break
+        endif
+    endfor
+    end_idx = 1;
+    for k = numel(wx):-1:1;
+        if (wx(k) < w_end)
+            end_idx = k;
+            break
+        endif
+    endfor
+    start_idx
+    end_idx
+    v = v(start_idx:end_idx);
+
+    n = numel(v)
+    rp = [];
+    for x = 1:num_points_target
+        xq = (x-1)*(n-1)/(num_points_target-1) + 1;
+        rp(x) = interp1(v, xq);
+    endfor
+    nrp = numel(rp)
+    p_refit = rp;
+endfunction

@@ -210,6 +210,10 @@ enum Mode {
     },
     #[clap(visible_alias = "tf-fir")]
     TransferFunctionFIR {
+        /// whether the input data contains error weigths
+        #[command(flatten)]
+        weights: WeightsFCA,
+
         /// numerator coefficients as a string of space separated values
         #[clap(long, required = true, visible_alias = "num")]
         numerator: String,
@@ -254,6 +258,7 @@ impl Mode {
             Mode::TransferFunctionFIR {
                 numerator,
                 denominator,
+                ..
             } => DataSource::Arg(Box::new(
                 numerator
                     .split_whitespace()
@@ -271,7 +276,7 @@ impl Mode {
             Mode::Gradient { weights, .. } => weights.to_usize(),
             Mode::TransferFunction { weights, .. } => weights.to_usize(),
             Mode::ImpulseResponse { weights, .. } => weights.to_usize(),
-            Mode::TransferFunctionFIR { .. } => 0,
+            Mode::TransferFunctionFIR { weights, .. } => weights.to_usize(),
         }
     }
 
@@ -280,7 +285,7 @@ impl Mode {
             Mode::Gradient { weights, .. } => weights.custom_weights(),
             Mode::TransferFunction { weights, .. } => weights.custom_weights(),
             Mode::ImpulseResponse { weights, .. } => weights.custom_weights(),
-            Mode::TransferFunctionFIR { .. } => None,
+            Mode::TransferFunctionFIR { weights, .. } => weights.custom_weights(),
         }
     }
 }

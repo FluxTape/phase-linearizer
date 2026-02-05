@@ -37,10 +37,10 @@ data_start    = weights_end + 1
 disp("warning: this optimziation mode is experimental and does not support all options")
 
 if (w_start != 0)
-    disp("warning: start freq will be set to 0")
+    disp("info: start freq will only be used for error calculation")
 endif
 if (w_end != 1)
-    disp("warning: end freq will be set to 1")
+    disp("info: end freq will only be used for error calculation")
 endif
 if (algo != 0)
     disp("warning: algo setting will be ignored in this mode")
@@ -53,7 +53,7 @@ if (input_is_file != 0)
     return
 endif
 if (includes_err_weights != 0)
-    disp("warning: err weights will be ignored in this mode")
+    disp("warning: err weights will only be used for error calculation")
 endif
 
 weights_p = tokens(weights_start:weights_end);
@@ -70,8 +70,58 @@ endif
 w = linspace(w_start, w_end, w_points_internal);
 inputtf = tf(tf_num, tf_den, pi)
 [tf_num, tf_den] = tfdata(inputtf, 'v'); % override tf_num, tf_den
-%fq = inputtf(w);
+fq = inputtf(w);
 
-[opt, e_min] = octave_opt_fir(tf_num, tf_den, order, w_points_internal, show_graph);
+%{
+[grd_ref, wx] = grpdelay(tf_num, tf_den);
+wx /= pi;
+start_idx = 1;
+for k = 1:numel(wx);
+    if (wx(k) > w_start)
+        start_idx = k;
+        break
+    endif
+endfor
+end_idx = 1;
+for k = numel(wx):-1:1;
+    if (wx(k) < w_end)
+        end_idx = k;
+        break
+    endif
+endfor
+start_idx
+end_idx
+
+
+grd_ref = grd_ref(start_idx:end_idx)';
+n_grd = numel(grd_ref)
+
+maxgrp = 0;
+maxgrp_w = 0;
+for i = 1:numel(grd_ref) 
+    if (grd_ref(i) > maxgrp)
+        maxgrp = grd_ref(i);
+        maxgrp_w = wx(i);
+    endif
+endfor
+maxgrp
+maxgrp_w
+%}
+
+if (includes_err_weights == 2)
+    err_weights  = weights_p;
+elseif (includes_err_weights == 1)
+    err_weights_ = abs(fq);
+    for k = 1:numel(err_weights_)
+        err_weights(k) = err_weights_(k);
+    endfor
+    %err_weights
+else
+    w_points = numel(grd_ref)
+    err_weights  = ones(1, w_points);
+endif
+
+output_precision(16);
+[opt, e_min] = octave_opt_fir(tf_num, tf_den, order, w_start, w_end, w_points_internal, err_weights, show_graph);
 disp("final opt:");
 disp([opt e_min]');
