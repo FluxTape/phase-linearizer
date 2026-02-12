@@ -129,11 +129,11 @@ enum Algo {
     /// basic Grid based starting values + fminunc
     Grid,
     /// random starting positions + fminunc
+    #[default]
     RandomUnc,
     /// random starting positions + fmincon
     RandomCon,
     /// particle swarm optimization
-    #[default]
     Pso,
     /// alternative particle swarm optimization - experiment
     PsoK,
@@ -158,6 +158,31 @@ enum DataSource<'a> {
     Stdin,
     Arg(Box<dyn Iterator<Item = &'a str> + 'a>),
     File(&'a String),
+}
+
+#[derive(clap::ValueEnum, Clone, Default, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+enum WindowFunction {
+    #[default]
+    None,
+    Hamming,
+    Hanning,
+    Blackman,
+    ChebWin,
+    Kaiser
+}
+
+impl WindowFunction {
+    fn to_usize(&self) -> usize {
+        match self {
+            WindowFunction::None => 0,
+            WindowFunction::Hamming => 1,
+            WindowFunction::Hanning => 2,
+            WindowFunction::Blackman => 3,
+            WindowFunction::ChebWin => 4,
+            WindowFunction::Kaiser => 5,
+        }
+    }
 }
 
 #[derive(clap::Subcommand, Clone, Debug, PartialEq, Serialize)]
@@ -221,6 +246,10 @@ enum Mode {
         /// denominator coefficients as a string of space separated values
         #[clap(long, required = true, visible_alias = "den")]
         denominator: String,
+
+        /// window function to use, default is none
+        #[arg(long, value_enum, default_value_t, visible_alias = "wf")]
+        window: WindowFunction,
     },
 }
 
@@ -343,6 +372,15 @@ fn main() -> Result<()> {
     {
         let mut oct_stdin = octave.stdin.take().ok_or(anyhow!("failed to get stdin"))?;
         let mut writer = BufWriter::new(&mut oct_stdin);
+        let algo_field = match &args.mode {
+            Mode::TransferFunctionFIR {  window, .. } => {
+                if args.algo != Algo::default() {
+                    println!("Warning: algo option will be ignored in FIR mode")
+                }
+                window.to_usize()
+            },
+            _ => args.algo.to_usize(),
+        };
         let octave_args = [
             /* 00 */ args.output.unwrap_or_else(|| "none".to_string()),
             /* 01 */ args.wmin.to_string(),
@@ -350,7 +388,7 @@ fn main() -> Result<()> {
             /* 03 */ args.points.to_string(),
             /* 04 */ args.order.to_string(),
             /* 05 */ (if args.graph { 1 } else { 0 }).to_string(),
-            /* 06 */ args.algo.to_usize().to_string(),
+            /* 06 */ algo_field.to_string(),
             /* 07 */ args.iterations.to_string(),
             /* 08 */ (if args.mode.input_is_file() { 1 } else { 0 }).to_string(),
             /* 09 */ args.mode.weights_mode().to_string(),

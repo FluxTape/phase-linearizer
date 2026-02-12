@@ -1,4 +1,4 @@
-function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points_internal, err_weights, show_plot)
+function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points_internal, err_weights, window, show_plot)
     tf_pre = tf(num, den, 1) % TODO samplfe rate of pi instead? see octave_adapter_tf
 
     num_points = order
@@ -59,16 +59,35 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
     fir = ifftshift(fir);
     fir_n2 = numel(fir)
     fir = fliplr(fir);
-    %window = blackman(numel(fir))';
-    window = hamming(numel(fir))';
-    %window = hanning(numel(fir))';
-    %window = kaiser(numel(fir))';
-    %window = chebwin(numel(fir))';
-    %window = ultrwin(numel(fir), -0.2, 2.1)';
 
+    window_func = 1;
+    window_name = "";
+    switch (window)
+    case 0
+        window_func = 1; % no window func
+        window_name = "None"
+    case 1
+        window_func = hamming(numel(fir))';
+        window_name = "Hamming"
+    case 2
+        window_func = hanning(numel(fir))';
+        window_name = "Hanning"
+    case 3
+        window_func = blackman(numel(fir))';
+        window_name = "Blackman"
+    case 4
+        window_func = chebwin(numel(fir))';
+        window_name = "Cheb Win"
+    case 5
+        window_func = kaiser(numel(fir))';
+        window_name = "Kaiser"
+    otherwise
+        disp("ERR: unknown window function")
+        return
+    endswitch
 
+    fir = fir .* window_func *2;
 
-    fir = fir .* window *2;
     real_order = numel(fir)
 
     if (show_plot)
@@ -174,7 +193,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
             w_g/pi, g_com, 
             w_n/pi, target1, 
             w_g_crop, err_weights)
-        title(sprintf("Group Delay of FIR Filter, order=%d, mean err flat=%d, mean err weighted=%d", real_order, avg_err_flat, avg_err_weighted))
+        title(sprintf("Group Delay of FIR Filter, order=%d, window=%s", real_order, window_name))
         %xlabel("Normalized Frequency (×π rad/sample)")
         %ylabel("Group Delay (samples)")
         legend("Input", "Compensation Filter", "Combined", 'target', 'err weights')

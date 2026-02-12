@@ -34,6 +34,8 @@ weights_start = 11
 weights_end   = weights_start + length_weights - 1
 data_start    = weights_end + 1
 
+window = algo;
+
 disp("warning: this optimziation mode is experimental and does not support all options")
 
 if (w_start != 0)
@@ -41,9 +43,6 @@ if (w_start != 0)
 endif
 if (w_end != 1)
     disp("info: end freq will only be used for error calculation")
-endif
-if (algo != 0)
-    disp("warning: algo setting will be ignored in this mode")
 endif
 if (iterations != 0)
     disp("warning: iteration setting will be ignored in this mode")
@@ -53,7 +52,7 @@ if (input_is_file != 0)
     return
 endif
 if (includes_err_weights != 0)
-    disp("warning: err weights will only be used for error calculation")
+    disp("info: err weights will only be used for error calculation")
 endif
 
 weights_p = tokens(weights_start:weights_end);
@@ -122,6 +121,6 @@ else
 endif
 
 output_precision(16);
-[opt, e_min] = octave_opt_fir(tf_num, tf_den, order, w_start, w_end, w_points_internal, err_weights, show_graph);
+[opt, e_min] = octave_opt_fir(tf_num, tf_den, order, w_start, w_end, w_points_internal, err_weights, window, show_graph);
 disp("final opt:");
 disp([opt e_min]');
