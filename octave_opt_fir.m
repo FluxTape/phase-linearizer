@@ -1,6 +1,4 @@
 function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points_internal, err_weights, show_plot)
-    %num = [0.0015   -0.0020    0.0002   -0.0009    0.0028   -0.0009    0.0002   -0.0020    0.0015]  
-    %den = [1.0000   -2.7355    5.9780   -7.8335    8.5654   -6.3463    3.9239   -1.4513    0.4299]
     tf_pre = tf(num, den, 1) % TODO samplfe rate of pi instead? see octave_adapter_tf
 
     num_points = order
@@ -18,27 +16,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
     % pha to radians
     pha = pha*pi/180;
     pha = rm_pi_jumps(pha);
-    %{
-    start_deg = pha(1)
-    deg_mid = pha(end/2)
-    end_deg = pha(end)
 
-    [g_pre, w_pre]  = grpdelay(num, den, numel(w)*10);
-    n = numel(g_pre)
-    pha = [0];
-    for k = 2:n
-        pha(end+1) = pha(end) + g_pre(k)/n;
-    endfor
-    pha = -pha;
-    end_deg = pha(end)
-    deg_mid = pha(end/2)
-    pha = downsample(pha, 10)
-    %}
-
-
-    %k = find_target_delay(w, pha)
-    %wk = w*k;
-    %lin_dif = wk - pha;
     if (show_plot)
         figure 2
 
@@ -58,8 +36,6 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
         fresp(n)  = 1*exp(1i*pha(n));
     endfor
 
-    %fresp = [zeros(1, 50), ones(1, 100), zeros(1, 50)];
-    %fresp = [ones(1, 100), zeros(1, 100)];
     Y1=fresp;
     Y2 = [Y1(1)/2 Y1(2:end)/2 fliplr(conj(Y1(2:end)))/2 ];
     fresp=Y2;
@@ -107,7 +83,6 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
 
     size_fir = numel(fir)
 
-    %[h, w_n] = freqz(fir, 1, numel(pha)*2);
     [h, w_n] = freqz(fir, 1, 1024);
     w_n = w_n';
     fir_pha = unwrap(angle(h))';
@@ -115,6 +90,8 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
     fir_db = mag2db(abs(h));
     fir_db = fir_db(1:end/2);
     w_n = w_n(1:end/2);
+
+    max_mag_err = min(fir_db)
 
     if (show_plot)
         figure 5
@@ -166,15 +143,6 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
         title("Phase Error with FIR Compensation Filter")
         xlabel("Normalized Frequency (×π rad/sample)")
         ylabel("Error")
-
-        %{
-        figure 8
-        plot(w_g/pi, g_pre, w_g/pi, g_fir, w_g/pi, g_com)
-        title(sprintf("Group Delay of FIR Filter, order=%d", real_order))
-        xlabel("Normalized Frequency (×π rad/sample)")
-        ylabel("Group Delay (samples)")
-        legend("Input", "Compensation Filter", "Combined")
-        %}
     endif
 
     grp_max = max(g_fir)
@@ -192,12 +160,14 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
     g_com_crop = g_pre_crop + g_fir_crop;
     
     % ew_m = mean(err(g_com_crop, err_weights))
-    err_weighted = err(g_com_crop, err_weights)
+    err_weighted = err(g_com_crop, err_weights);
     avg_err_weighted = mean(err_weighted)
+
+    avg_weighted_grd = sum(g_com_crop .* err_weights) / sum(err_weights)
     
     if (show_plot)
         figure 8
-        target1 = zeros(length(w_n),1) + sum(g_com_crop .* err_weights) / sum(err_weights);
+        target1 = zeros(length(w_n),1) + avg_weighted_grd;
         plot(
             w_g/pi, g_pre, 
             w_g/pi, g_fir, 
@@ -205,8 +175,8 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
             w_n/pi, target1, 
             w_g_crop, err_weights)
         title(sprintf("Group Delay of FIR Filter, order=%d, mean err flat=%d, mean err weighted=%d", real_order, avg_err_flat, avg_err_weighted))
-        xlabel("Normalized Frequency (×π rad/sample)")
-        ylabel("Group Delay (samples)")
+        %xlabel("Normalized Frequency (×π rad/sample)")
+        %ylabel("Group Delay (samples)")
         legend("Input", "Compensation Filter", "Combined", 'target', 'err weights')
 
         h = figure
@@ -222,8 +192,8 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
             w_g_crop, err_weights)
         legend('err flat', 'err weighted', 'err weights')
         title(sprintf("Group Delay Error, order=%d, mean err flat=%d, mean err weighted=%d", real_order, avg_err_flat, avg_err_weighted))
-        xlabel("Normalized Frequency (×π rad/sample)")
-        ylabel("Error")
+        %xlabel("Normalized Frequency (×π rad/sample)")
+        %ylabel("Error")
         %grid on
         waitfor(h);
     endif
