@@ -157,41 +157,78 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
     s_g1 = numel(w_g)
     s_g2 = numel(w_g2)
 
-    grp_max = max(g_fir)
-
-    avg_grd = mean(g_com)
-    err = (g_com - avg_grd).^2;
-    avg_err = mean(err)
-
-    if (show_plot)
+    if (show_plot)        
         figure 7
+        p_ref = polyfit(w_n, pha_combined, 1);
+        lin_ref = w_n * p_ref(1);
+        ph_err = (lin_ref - pha_combined).^2;
+        plot(w_n/pi, ph_err)
+        title("Phase Error with FIR Compensation Filter")
+        xlabel("Normalized Frequency (×π rad/sample)")
+        ylabel("Error")
+
+        %{
+        figure 8
         plot(w_g/pi, g_pre, w_g/pi, g_fir, w_g/pi, g_com)
         title(sprintf("Group Delay of FIR Filter, order=%d", real_order))
         xlabel("Normalized Frequency (×π rad/sample)")
         ylabel("Group Delay (samples)")
         legend("Input", "Compensation Filter", "Combined")
-
-        %{
-        figure 8
-        p_ref = polyfit(w_n, pha_combined, 1);
-        lin_ref = w_n * p_ref(1);
-        err = (lin_ref - pha_combined).^2;
-        plot(w_n/pi, err)
-        title("Phase Error with FIR Compensation Filter")
-        xlabel("Normalized Frequency (×π rad/sample)")
-        ylabel("Error")
-        %ylim([0, 0.01])
         %}
+    endif
+
+    grp_max = max(g_fir)
+
+    avg_grd = mean(g_com)
+    err_flat = (g_com - avg_grd).^2;
+    avg_err_flat = mean(err_flat)
+
+    % crop and weight grp response for error calc
+    err_weights = refit_points(err_weights, w_start, w_end, w_points_internal);
+
+    w_g_crop = linspace(w_start, w_end, w_points_internal);
+    g_fir_crop = refit_points(g_fir, w_start, w_end, w_points_internal);
+    g_pre_crop = refit_points(g_pre, w_start, w_end, w_points_internal);
+    g_com_crop = g_pre_crop + g_fir_crop;
+    
+    % ew_m = mean(err(g_com_crop, err_weights))
+    err_weighted = err(g_com_crop, err_weights)
+    avg_err_weighted = mean(err_weighted)
+    
+    if (show_plot)
+        figure 8
+        target1 = zeros(length(w_n),1) + sum(g_com_crop .* err_weights) / sum(err_weights);
+        plot(
+            w_g/pi, g_pre, 
+            w_g/pi, g_fir, 
+            w_g/pi, g_com, 
+            w_n/pi, target1, 
+            w_g_crop, err_weights)
+        title(sprintf("Group Delay of FIR Filter, order=%d, mean err flat=%d, mean err weighted=%d", real_order, avg_err_flat, avg_err_weighted))
+        xlabel("Normalized Frequency (×π rad/sample)")
+        ylabel("Group Delay (samples)")
+        legend("Input", "Compensation Filter", "Combined", 'target', 'err weights')
 
         h = figure
-        plot(w_n/pi, err)
-        title(sprintf("Group Delay Error with FIR Compensation Filter, order=%d, avg err=%d", real_order, avg_err))
+        %plot(w_n/pi, err_flat, w_g_crop, err_weighted)
+        %title(sprintf("Group Delay Error with FIR Compensation Filter, order=%d, avg err=%d", real_order, avg_err_weighted))
+        %xlabel("Normalized Frequency (×π rad/sample)")
+        %ylabel("Error^2")
+
+        
+        plot(
+            w_n/pi, err_flat,
+            w_g_crop, err_weighted,
+            w_g_crop, err_weights)
+        legend('err flat', 'err weighted', 'err weights')
+        title(sprintf("Group Delay Error, order=%d, mean err flat=%d, mean err weighted=%d", real_order, avg_err_flat, avg_err_weighted))
         xlabel("Normalized Frequency (×π rad/sample)")
-        ylabel("Error^2")
+        ylabel("Error")
+        %grid on
         waitfor(h);
     endif
 
-    e_min = avg_err;
+    e_min = avg_err_weighted;
     opt = real(fir);
 endfunction
 
@@ -236,7 +273,7 @@ endfunction
 function p_refit = refit_points(v, w_start, w_end, num_points_target)
     % assume w range [0, 1]
     nv = numel(v)
-    wx = linspace(0, 1, numel(v))
+    wx = linspace(0, 1, numel(v));
     start_idx = 1;
     for k = 1:numel(wx);
         if (wx(k) > w_start)
@@ -263,4 +300,15 @@ function p_refit = refit_points(v, w_start, w_end, num_points_target)
     endfor
     nrp = numel(rp)
     p_refit = rp;
+endfunction
+
+function e = err(grd, err_weights)
+    avg = sum(grd .* err_weights) / sum(err_weights);
+    %avg = mean(grd);
+    e = ((grd - avg).^2).*err_weights;
+endfunction
+
+function e = err_sum(err)
+    n = numel(err);
+    e = sum(err)/n;
 endfunction
