@@ -110,7 +110,8 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
     fir_db = fir_db(1:end/2);
     w_n = w_n(1:end/2);
 
-    max_mag_err = min(fir_db)
+    [max_mag_err, max_err_i] = max(abs(fir_db));
+    max_mag_err = fir_db(max_err_i)
 
     if (show_plot)
         figure 5
@@ -196,7 +197,9 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
         title(sprintf("Group Delay of FIR Filter, order=%d, window=%s", real_order, window_name))
         %xlabel("Normalized Frequency (×π rad/sample)")
         %ylabel("Group Delay (samples)")
-        legend("Input", "Compensation Filter                  ", "Combined", 'Target Grd', 'Err Weights')
+        legend("Input", "Compensation Filter        ", "Combined", 'Target Grd', 'Err Weights', "location", "southeast")
+        xlabel("Normalized Frequency (pi rad/sample)")
+        ylabel("Group Delay")
 
         h = figure
         %plot(w_n/pi, err_flat, w_g_crop, err_weighted)
@@ -209,8 +212,10 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
             w_n/pi, err_flat,
             w_g_crop, err_weighted,
             w_g_crop, err_weights)
-        legend('Err Flat', 'Err Weighted              ', 'Err Weights')
-        title(sprintf("Group Delay Error, order=%d, mean err flat=%s, mean err weighted=%s", real_order, num2str(avg_err_flat, 3), num2str(avg_err_weighted, 3)))
+        legend('Err Flat', 'Err Weighted           ', 'Err Weights')
+        xlabel("Normalized Frequency (pi rad/sample)")
+        ylabel("Error")
+        title(sprintf("Grd. Err., order=%d, mean err flat=%s, mean err weighted=%s", real_order, num2str(avg_err_flat, 3), num2str(avg_err_weighted, 3)))
         %xlabel("Normalized Frequency (×π rad/sample)")
         %ylabel("Error")
         %grid on

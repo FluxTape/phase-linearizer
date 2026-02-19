@@ -164,11 +164,17 @@ enum DataSource<'a> {
 #[serde(rename_all = "kebab-case")]
 enum WindowFunction {
     #[default]
+    /// no window function, aka. box/rectangle
     None,
+    /// Hamming window
     Hamming,
+    /// Hanning window
     Hanning,
+    /// Blackman window
     Blackman,
+    /// Chebyshev window
     ChebWin,
+    /// Kaiser window
     Kaiser
 }
 
