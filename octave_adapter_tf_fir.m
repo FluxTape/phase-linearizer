@@ -116,8 +116,7 @@ elseif (includes_err_weights == 1)
     endfor
     %err_weights
 else
-    w_points = numel(grd_ref)
-    err_weights  = ones(1, w_points);
+    err_weights  = ones(1, w_points_internal);
 endif
 
 output_precision(16);
