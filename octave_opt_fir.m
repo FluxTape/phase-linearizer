@@ -117,12 +117,12 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
         %finer grid for plotting
         subplot (2, 1, 1)
         plot(w_n/pi, fir_db);
-        title("Bode Diagram of FIR filter")
+        title(sprintf("Bode Diagram of FIR Filter, order=%d, window=%s", real_order, window_name))
         ylabel("Magnitude [dB]")
 
         subplot (2, 1, 2)
         plot(w_n/pi, fir_pha*180/pi);
-        xlabel("Normalized Frequency (×π rad/sample)")
+        xlabel("Normalized Frequency (pi rad/sample)")
         ylabel("Phase (deg)")
     endif
 
@@ -140,7 +140,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
         figure 6
         plot(w_n/pi, pha_fine*180/pi, w_n/pi, fir_pha*180/pi, w_n/pi, pha_combined*180/pi)
         title("Phase Response")
-        xlabel("Normalized Frequency (×π rad/sample)")
+        xlabel("Normalized Frequency (pi rad/sample)")
         ylabel("Phase (deg)")
         legend("Input", "Compensation Filter", "Combined")
     endif
@@ -160,7 +160,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
         ph_err = (lin_ref - pha_combined).^2;
         plot(w_n/pi, ph_err)
         title("Phase Error with FIR Compensation Filter")
-        xlabel("Normalized Frequency (×π rad/sample)")
+        xlabel("Normalized Frequency (pi rad/sample)")
         ylabel("Error")
     endif
 
@@ -196,7 +196,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
         title(sprintf("Group Delay of FIR Filter, order=%d, window=%s", real_order, window_name))
         %xlabel("Normalized Frequency (×π rad/sample)")
         %ylabel("Group Delay (samples)")
-        legend("Input", "Compensation Filter", "Combined", 'target', 'err weights')
+        legend("Input", "Compensation Filter                  ", "Combined", 'Target Grd', 'Err Weights')
 
         h = figure
         %plot(w_n/pi, err_flat, w_g_crop, err_weighted)
@@ -209,8 +209,8 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
             w_n/pi, err_flat,
             w_g_crop, err_weighted,
             w_g_crop, err_weights)
-        legend('err flat', 'err weighted', 'err weights')
-        title(sprintf("Group Delay Error, order=%d, mean err flat=%d, mean err weighted=%d", real_order, avg_err_flat, avg_err_weighted))
+        legend('Err Flat', 'Err Weighted              ', 'Err Weights')
+        title(sprintf("Group Delay Error, order=%d, mean err flat=%s, mean err weighted=%s", real_order, num2str(avg_err_flat, 3), num2str(avg_err_weighted, 3)))
         %xlabel("Normalized Frequency (×π rad/sample)")
         %ylabel("Error")
         %grid on
