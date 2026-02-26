@@ -165,7 +165,7 @@ enum DataSource<'a> {
 enum WindowFunction {
     #[default]
     /// no window function, aka. box/rectangle
-    None,
+    Rect,
     /// Hamming window
     Hamming,
     /// Hanning window
@@ -181,7 +181,7 @@ enum WindowFunction {
 impl WindowFunction {
     fn to_usize(&self) -> usize {
         match self {
-            WindowFunction::None => 0,
+            WindowFunction::Rect => 0,
             WindowFunction::Hamming => 1,
             WindowFunction::Hanning => 2,
             WindowFunction::Blackman => 3,
