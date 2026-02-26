@@ -1,4 +1,4 @@
-function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points_internal, err_weights, window, show_plot)
+function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points_internal, err_weights, window, show_plot, output_path)
     tf_pre = tf(num, den, 1) % TODO samplfe rate of pi instead? see octave_adapter_tf
 
     num_points = order
@@ -65,7 +65,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
     switch (window)
     case 0
         window_func = 1; % no window func
-        window_name = "None"
+        window_name = "Rect"
     case 1
         window_func = hamming(numel(fir))';
         window_name = "Hamming"
@@ -112,6 +112,10 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
 
     [max_mag_err, max_err_i] = max(abs(fir_db));
     max_mag_err = fir_db(max_err_i)
+
+    fir_db_crop = refit_points(fir_db, w_start, w_end, w_points_internal);
+    [max_mag_err_crop, max_err_i_crop] = max(abs(fir_db_crop));
+    max_mag_err_crop = fir_db_crop(max_err_i_crop)
 
     if (show_plot)
         figure 5
@@ -220,6 +224,13 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
         %ylabel("Error")
         %grid on
         waitfor(h);
+    endif
+
+    if (!strcmp(output_path, "none"))
+        disp("saving results to file")
+        disp(output_path)
+        csv_output = [window, avg_err_flat, avg_err_weighted, max_mag_err, max_mag_err_crop, order, real_order, avg_grd];
+        dlmwrite(output_path, csv_output, "-append")
     endif
 
     e_min = avg_err_weighted;

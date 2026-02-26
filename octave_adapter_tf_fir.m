@@ -120,6 +120,6 @@ else
 endif
 
 output_precision(16);
-[opt, e_min] = octave_opt_fir(tf_num, tf_den, order, w_start, w_end, w_points_internal, err_weights, window, show_graph);
+[opt, e_min] = octave_opt_fir(tf_num, tf_den, order, w_start, w_end, w_points_internal, err_weights, window, show_graph, output_path);
 disp("final opt:");
 disp([opt e_min]');
