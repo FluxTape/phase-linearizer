@@ -13,13 +13,13 @@ set -eux
 cargo build --release
 
 WINDOW="rect"
-ORDER="81"
+ORDER="82"
 echo "FIR $WINDOW - $DISPNAME"
 CMD="./target/release/phase-linearizer -n $W_START -x $W_END -p $POINTS -o $ORDER -f ./experimental_results/fir/${TESTFN}.csv transfer-function-fir --window $WINDOW --amp --num \"$NUM\" --den \"$DEN\""
 sh -c "$CMD"
 
 WINDOW="hamming"
-ORDER="81"
+ORDER="82"
 echo "FIR $WINDOW - $DISPNAME"
 CMD="./target/release/phase-linearizer -n $W_START -x $W_END -p $POINTS -o $ORDER -f ./experimental_results/fir/${TESTFN}.csv transfer-function-fir --window $WINDOW --amp --num \"$NUM\" --den \"$DEN\""
 sh -c "$CMD"
