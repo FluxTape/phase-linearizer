@@ -101,6 +101,11 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
         dlmwrite(output_path, csv_output, "-append")
     endif
 
+    g_opt1 = gr_ap_m_even(opt, w.*pi);
+    both1 = gradient_ref + g_opt1;
+    target1 = zeros(length(w),1) + sum(both1 .* err_weights) / sum(err_weights);
+    target_grd = target1(1)
+
     if (show_plot)
         if (numel(best_errs) > 0)
             %% Plot results
@@ -118,10 +123,6 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
             ylabel("best err");
         endif
 
-        g_opt1 = gr_ap_m_even(opt, w.*pi);
-        both1 = gradient_ref + g_opt1;
-        target1 = zeros(length(w),1) + sum(both1 .* err_weights) / sum(err_weights);
-        target_grd = target1(1)
         h = figure;
         plot(w, gradient_ref,
             w, g_opt1,
