@@ -122,7 +122,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
         %finer grid for plotting
         subplot (2, 1, 1)
         plot(w_n/pi, fir_db);
-        title(sprintf("Bode Diagram of FIR Filter, order=%d, window=%s", real_order, window_name))
+        title(sprintf("FIR Bode Diagram, order=%d, window=%s, max mag. err=%sdB", real_order, window_name, num2str(max_mag_err_crop, 3)))
         ylabel("Magnitude [dB]")
 
         subplot (2, 1, 2)
@@ -220,6 +220,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
         xlabel("Normalized Frequency (pi rad/sample)")
         ylabel("Error")
         title(sprintf("Grd. Err., order=%d, mean err flat=%s, mean err weighted=%s", real_order, num2str(avg_err_flat, 3), num2str(avg_err_weighted, 3)))
+        ylim([0, max(err_weighted)*1.1])
         %xlabel("Normalized Frequency (×π rad/sample)")
         %ylabel("Error")
         %grid on
