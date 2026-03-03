@@ -149,7 +149,7 @@ impl Algo {
             Algo::RandomCon => 2,
             Algo::Pso => 3,
             Algo::PsoK => 4,
-            Algo::PsoM => 5
+            Algo::PsoM => 5,
         }
     }
 }
@@ -175,7 +175,7 @@ enum WindowFunction {
     /// Chebyshev window
     ChebWin,
     /// Kaiser window
-    Kaiser
+    Kaiser,
 }
 
 impl WindowFunction {
@@ -194,9 +194,9 @@ impl WindowFunction {
 #[derive(clap::Subcommand, Clone, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 enum Mode {
-    /// gradient values
+    /// evenly spaced sample points of the group delay response
     #[clap(visible_alias = "grd")]
-    Gradient {
+    GroupDelay {
         /// whether the input data contains error weigths
         #[command(flatten)]
         weights: WeightsFC,
@@ -262,16 +262,16 @@ enum Mode {
 impl Mode {
     fn adapter_path(&self) -> &'static str {
         match self {
-            Mode::Gradient { .. } => "./octave_adapter_gradient.m",
+            Mode::GroupDelay { .. } => "./octave_adapter_group_delay.m",
             Mode::TransferFunction { .. } => "./octave_adapter_tf.m",
             Mode::ImpulseResponse { .. } => "./octave_adapter_imp.m",
-            Mode::TransferFunctionFIR { .. } => "./octave_adapter_tf_fir.m"
+            Mode::TransferFunctionFIR { .. } => "./octave_adapter_tf_fir.m",
         }
     }
 
     fn data_source(&self) -> DataSource<'_> {
         match self {
-            Mode::Gradient { file, data, .. } => match (file, !data.is_empty()) {
+            Mode::GroupDelay { file, data, .. } => match (file, !data.is_empty()) {
                 (Some(file), _) => DataSource::File(file),
                 (_, true) => DataSource::Arg(Box::new(data.split_whitespace())),
                 _ => DataSource::Stdin,
@@ -308,7 +308,7 @@ impl Mode {
 
     fn weights_mode(&self) -> usize {
         match self {
-            Mode::Gradient { weights, .. } => weights.to_usize(),
+            Mode::GroupDelay { weights, .. } => weights.to_usize(),
             Mode::TransferFunction { weights, .. } => weights.to_usize(),
             Mode::ImpulseResponse { weights, .. } => weights.to_usize(),
             Mode::TransferFunctionFIR { weights, .. } => weights.to_usize(),
@@ -317,7 +317,7 @@ impl Mode {
 
     fn custom_weights(&self) -> Option<&Vec<f64>> {
         match self {
-            Mode::Gradient { weights, .. } => weights.custom_weights(),
+            Mode::GroupDelay { weights, .. } => weights.custom_weights(),
             Mode::TransferFunction { weights, .. } => weights.custom_weights(),
             Mode::ImpulseResponse { weights, .. } => weights.custom_weights(),
             Mode::TransferFunctionFIR { weights, .. } => weights.custom_weights(),
@@ -379,12 +379,12 @@ fn main() -> Result<()> {
         let mut oct_stdin = octave.stdin.take().ok_or(anyhow!("failed to get stdin"))?;
         let mut writer = BufWriter::new(&mut oct_stdin);
         let algo_field = match &args.mode {
-            Mode::TransferFunctionFIR {  window, .. } => {
+            Mode::TransferFunctionFIR { window, .. } => {
                 if args.algo != Algo::default() {
                     println!("Warning: algo option will be ignored in FIR mode")
                 }
                 window.to_usize()
-            },
+            }
             _ => args.algo.to_usize(),
         };
         let octave_args = [
@@ -438,10 +438,10 @@ fn main() -> Result<()> {
         Mode::TransferFunctionFIR { .. } => {
             println!("minimum error: {}", e_min);
             println!("FIR coefficients:");
-            for coef in res{
+            for coef in res {
                 println!("{:.16}", coef)
             }
-        },
+        }
         _ => {
             if res.len() & 1 == 1 {
                 // is odd
@@ -453,7 +453,9 @@ fn main() -> Result<()> {
             while let (Some(r), Some(theta)) = (res_iter.next(), res_iter.next()) {
                 res_tuple.push((r, theta));
             }
-            res_tuple.sort_by(|(_r1, t1), (_r2, t2)| t1.partial_cmp(t2).expect("should not contain NANs"));
+            res_tuple.sort_by(|(_r1, t1), (_r2, t2)| {
+                t1.partial_cmp(t2).expect("should not contain NANs")
+            });
 
             println!("minimum error: {}", e_min);
             for (r, theta) in res_tuple {
