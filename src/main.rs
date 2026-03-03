@@ -197,7 +197,7 @@ enum Mode {
     /// evenly spaced sample points of the group delay response
     #[clap(visible_alias = "grd")]
     GroupDelay {
-        /// whether the input data contains error weigths
+        /// optional error weigths for optimization
         #[command(flatten)]
         weights: WeightsFC,
 
@@ -208,10 +208,10 @@ enum Mode {
         /// data as a string of space separated values
         data: String,
     },
-    /// numerator followed by denominator
+    /// numerator and denominator
     #[clap(visible_alias = "tf")]
     TransferFunction {
-        /// whether the input data contains error weigths
+        /// optional error weigths for optimization
         #[command(flatten)]
         weights: WeightsFCA,
 
@@ -223,25 +223,22 @@ enum Mode {
         #[clap(long, required = true, visible_alias = "den")]
         denominator: String,
     },
-    /// impulse response sample points
+    /// impulse response file (experimental)
     #[clap(visible_alias = "imp")]
     ImpulseResponse {
-        /// whether the input data contains error weigths
-        //#[arg(short, long, value_enum, default_value_t)]
+        /// optional error weigths for optimization
         #[command(flatten)]
         weights: WeightsFCA,
 
         /// path to impulse response file. If the file has multiple
         /// audio channels only the first one will be used
         #[arg(short, long)]
-        file: Option<String>,
-
-        /// sample rate followed by raw data as a string of space separated values
-        data: String,
+        file: String,
     },
+    /// numerator and denominator, generates a FIR filter
     #[clap(visible_alias = "tf-fir")]
     TransferFunctionFIR {
-        /// whether the input data contains error weigths
+        /// in this mode error weigths are only used for plots and error calculation
         #[command(flatten)]
         weights: WeightsFCA,
 
@@ -285,11 +282,7 @@ impl Mode {
                     .split_whitespace()
                     .chain(denominator.split_whitespace()),
             )),
-            Mode::ImpulseResponse { file, data, .. } => match (file, !data.is_empty()) {
-                (Some(file), _) => DataSource::File(file),
-                (_, true) => DataSource::Arg(Box::new(data.split_whitespace())),
-                _ => DataSource::Stdin,
-            },
+            Mode::ImpulseResponse { file, .. } =>  DataSource::File(file),
             Mode::TransferFunctionFIR {
                 numerator,
                 denominator,

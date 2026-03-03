@@ -64,6 +64,8 @@ if !isempty(err_at)
     return
 endif
 
+disp("WARNING: Impulse Response mode is very experimental and the generated data should not be trusted")
+
 fs = data_p(1)
 h_imp = data_p(2:end);
 s_h_imp = size(h_imp)
