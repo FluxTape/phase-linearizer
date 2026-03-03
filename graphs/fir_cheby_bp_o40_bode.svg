@@ -4,7 +4,7 @@
  <desc>
 Creator: GL2PS 1.4.2, (C) 1999-2020 C. Geuzaine
 For: Octave
-CreationDate: Thu Feb 19 11:53:28 2026
+CreationDate: Tue Mar  3 15:26:18 2026
 </desc>
  <defs/>
  <polygon fill="#ffffff" points="0,0 374,0 374,320 0,320"/>
@@ -74,8 +74,8 @@ CreationDate: Thu Feb 19 11:53:28 2026
    <polyline fill="none" points="49.0086,27.9502 339.226,27.9502" stroke="#262626" stroke-dasharray="16,0" stroke-linecap="square" stroke-linejoin="miter" stroke-width="0.5"/>
    <polyline fill="none" points="49.0086,132.657 49.0086,27.9502" stroke="#262626" stroke-dasharray="16,0" stroke-linecap="square" stroke-linejoin="miter" stroke-width="0.5"/>
    <polyline fill="none" points="339.226,132.657 339.226,27.9502" stroke="#262626" stroke-dasharray="16,0" stroke-linecap="square" stroke-linejoin="miter" stroke-width="0.5"/>
-   <g font-family="FreeSans" font-size="11" font-style="normal" font-weight="bold" transform="translate(45.6175,17.9502) rotate(-0,148.5,0)" xml:space="preserve">
-    <text fill="rgb(0,0,0)" x="0 8 15 22 28 31 39 42 48 55 59 65 75 78 85 89 92 99 102 110 113 120 123 126 130 136 140 143 146 153 157 164 170 174 180 186 192 195 198 207 210 217 224 231 240 246 254 260 270 280 283 290 " y="-3">Bode Diagram of FIR Filter, order=79, window=Hamming</text>
+   <g font-family="FreeSans" font-size="11" font-style="normal" font-weight="bold" transform="translate(23.6175,17.9502) rotate(-0,170.5,0)" xml:space="preserve">
+    <text fill="rgb(0,0,0)" x="0 7 10 18 21 29 36 43 49 52 60 63 69 76 80 86 96 99 102 109 113 120 123 129 135 141 144 147 156 159 166 173 180 189 195 203 209 219 229 232 239 246 249 252 262 268 275 278 281 287 291 295 301 305 311 314 320 326 333 " y="-3">FIR Bode Diagram, ord.=79, window=Hamming, mag. err=-7.54dB</text>
    </g>
    <g font-family="FreeSans" font-size="11" font-style="normal" font-weight="normal" transform="translate(-5.99517,80.3038) rotate(-90,36,0)" xml:space="preserve">
     <text fill="rgb(38,38,38)" x="0 9 15 21 27 29 32 38 44 50 53 56 62 69 " y="-2">Magnitude [dB]</text>

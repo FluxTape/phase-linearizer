@@ -122,7 +122,7 @@ function [opt, e_min] = octave_opt_fir(num, den, order, w_start, w_end, w_points
         %finer grid for plotting
         subplot (2, 1, 1)
         plot(w_n/pi, fir_db);
-        title(sprintf("FIR Bode Diagram, order=%d, window=%s, max mag. err=%sdB", real_order, window_name, num2str(max_mag_err_crop, 3)))
+        title(sprintf("FIR Bode Diagram, ord.=%d, window=%s, mag. err=%sdB", real_order, window_name, num2str(max_mag_err_crop, 3)))
         ylabel("Magnitude [dB]")
 
         subplot (2, 1, 2)
