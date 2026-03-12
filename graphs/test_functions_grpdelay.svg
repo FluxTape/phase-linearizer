@@ -4,7 +4,7 @@
  <desc>
 Creator: GL2PS 1.4.2, (C) 1999-2020 C. Geuzaine
 For: Octave
-CreationDate: Thu Mar 12 12:06:22 2026
+CreationDate: Thu Mar 12 12:31:24 2026
 </desc>
  <defs/>
  <polygon fill="#ffffff" points="0,0 524,0 524,470 0,470"/>
@@ -116,29 +116,29 @@ CreationDate: Thu Mar 12 12:06:22 2026
    <polygon points="0,470 524,470 524,0 0,0"/>
   </clipPath>
   <g clip-path="url(#cp00524470)">
-   <polygon fill="#ffffff" points="356.9,411.003 466.914,411.003 466.914,336.993 356.9,336.993" shape-rendering="crispEdges"/>
-   <polyline fill="none" points="356.9,411.003 466.914,411.003" stroke="#262626" stroke-dasharray="16,0" stroke-linecap="square" stroke-linejoin="miter" stroke-width="0.5"/>
-   <polyline fill="none" points="356.9,336.993 466.914,336.993" stroke="#262626" stroke-dasharray="16,0" stroke-linecap="square" stroke-linejoin="miter" stroke-width="0.5"/>
-   <polyline fill="none" points="356.9,411.003 356.9,336.993" stroke="#262626" stroke-dasharray="16,0" stroke-linecap="square" stroke-linejoin="miter" stroke-width="0.5"/>
-   <polyline fill="none" points="466.914,411.003 466.914,336.993" stroke="#262626" stroke-dasharray="16,0" stroke-linecap="square" stroke-linejoin="miter" stroke-width="0.5"/>
-   <polyline fill="none" points="360.901,345.994 380.91,345.994" stroke="#0071bc" stroke-linecap="butt" stroke-linejoin="round" stroke-width="0.5"/>
-   <g font-family="FreeSans" font-size="9" font-style="normal" font-weight="normal" transform="translate(384.912,350.994) rotate(-0,-0,-5)" xml:space="preserve">
+   <polygon fill="#ffffff" points="356.9,117.324 466.914,117.324 466.914,43.313 356.9,43.313" shape-rendering="crispEdges"/>
+   <polyline fill="none" points="356.9,117.324 466.914,117.324" stroke="#262626" stroke-dasharray="16,0" stroke-linecap="square" stroke-linejoin="miter" stroke-width="0.5"/>
+   <polyline fill="none" points="356.9,43.313 466.914,43.313" stroke="#262626" stroke-dasharray="16,0" stroke-linecap="square" stroke-linejoin="miter" stroke-width="0.5"/>
+   <polyline fill="none" points="356.9,117.324 356.9,43.313" stroke="#262626" stroke-dasharray="16,0" stroke-linecap="square" stroke-linejoin="miter" stroke-width="0.5"/>
+   <polyline fill="none" points="466.914,117.324 466.914,43.313" stroke="#262626" stroke-dasharray="16,0" stroke-linecap="square" stroke-linejoin="miter" stroke-width="0.5"/>
+   <polyline fill="none" points="360.901,52.3148 380.91,52.3148" stroke="#0071bc" stroke-linecap="butt" stroke-linejoin="round" stroke-width="0.5"/>
+   <g font-family="FreeSans" font-size="9" font-style="normal" font-weight="normal" transform="translate(384.912,57.3148) rotate(-0,-0,-5)" xml:space="preserve">
     <text fill="rgb(0,0,0)" x="0 6 11 16 21 25 27 32 " y="-2">Cheby LP</text>
    </g>
-   <polyline fill="none" points="360.901,359.996 380.91,359.996" stroke="#d85218" stroke-linecap="butt" stroke-linejoin="round" stroke-width="0.5"/>
-   <g font-family="FreeSans" font-size="9" font-style="normal" font-weight="normal" transform="translate(384.912,364.996) rotate(-0,-0,-5)" xml:space="preserve">
+   <polyline fill="none" points="360.901,66.3165 380.91,66.3165" stroke="#d85218" stroke-linecap="butt" stroke-linejoin="round" stroke-width="0.5"/>
+   <g font-family="FreeSans" font-size="9" font-style="normal" font-weight="normal" transform="translate(384.912,71.3165) rotate(-0,-0,-5)" xml:space="preserve">
     <text fill="rgb(0,0,0)" x="0 6 11 16 21 25 27 33 " y="-2">Cheby HP</text>
    </g>
-   <polyline fill="none" points="360.901,373.998 380.91,373.998" stroke="#ecb01f" stroke-linecap="butt" stroke-linejoin="round" stroke-width="0.5"/>
-   <g font-family="FreeSans" font-size="9" font-style="normal" font-weight="normal" transform="translate(384.912,378.998) rotate(-0,-0,-5)" xml:space="preserve">
+   <polyline fill="none" points="360.901,80.3183 380.91,80.3183" stroke="#ecb01f" stroke-linecap="butt" stroke-linejoin="round" stroke-width="0.5"/>
+   <g font-family="FreeSans" font-size="9" font-style="normal" font-weight="normal" transform="translate(384.912,85.3183) rotate(-0,-0,-5)" xml:space="preserve">
     <text fill="rgb(0,0,0)" x="0 6 11 16 21 25 27 33 " y="-2">Cheby BP</text>
    </g>
-   <polyline fill="none" points="360.901,388 380.91,388" stroke="#7d2e8d" stroke-linecap="butt" stroke-linejoin="round" stroke-width="0.5"/>
-   <g font-family="FreeSans" font-size="9" font-style="normal" font-weight="normal" transform="translate(384.912,393) rotate(-0,-0,-5)" xml:space="preserve">
+   <polyline fill="none" points="360.901,94.32 380.91,94.32" stroke="#7d2e8d" stroke-linecap="butt" stroke-linejoin="round" stroke-width="0.5"/>
+   <g font-family="FreeSans" font-size="9" font-style="normal" font-weight="normal" transform="translate(384.912,99.32) rotate(-0,-0,-5)" xml:space="preserve">
     <text fill="rgb(0,0,0)" x="0 6 11 16 21 23 29 31 37 39 " y="-2">Peak &amp; Dip</text>
    </g>
-   <polyline fill="none" points="360.901,402.001 380.91,402.001" stroke="#76ab2f" stroke-linecap="butt" stroke-linejoin="round" stroke-width="0.5"/>
-   <g font-family="FreeSans" font-size="9" font-style="normal" font-weight="normal" transform="translate(384.912,407.001) rotate(-0,-0,-5)" xml:space="preserve">
+   <polyline fill="none" points="360.901,108.322 380.91,108.322" stroke="#76ab2f" stroke-linecap="butt" stroke-linejoin="round" stroke-width="0.5"/>
+   <g font-family="FreeSans" font-size="9" font-style="normal" font-weight="normal" transform="translate(384.912,113.322) rotate(-0,-0,-5)" xml:space="preserve">
     <text fill="rgb(0,0,0)" x="0 6 9 14 19 21 27 29 34 40 42 44 46 48 50 52 54 56 58 60 62 64 66 68 70 72 74 76 " y="-2">Stop &amp; LP                   </text>
    </g>
   </g>

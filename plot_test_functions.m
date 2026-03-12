@@ -48,7 +48,7 @@ ylim([-100 10])
 h = legend ('Cheby LP', 'Cheby HP', 'Cheby BP', 'Peak & Dip', 'Stop & LP                   ', "location", "northwest");
 
 subplot(2,1,2)
-h = legend ('Cheby LP', 'Cheby HP', 'Cheby BP', 'Peak & Dip', 'Stop & LP                   ', "location", "northwest");
+h = legend ('Cheby LP', 'Cheby HP', 'Cheby BP', 'Peak & Dip', 'Stop & LP                   ', "location", "southwest");
 
 figure 2;
 grpdelay(b1, a1)
@@ -59,4 +59,4 @@ grpdelay(b4_1, a4_1)
 grpdelay(b5, a5)
 hold off;
 title('Group delay of test functions')
-h = legend ('Cheby LP', 'Cheby HP', 'Cheby BP', 'Peak & Dip', 'Stop & LP                   ', "location", "southeast");
+h = legend ('Cheby LP', 'Cheby HP', 'Cheby BP', 'Peak & Dip', 'Stop & LP                   ', "location", "northeast");
