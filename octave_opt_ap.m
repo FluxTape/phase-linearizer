@@ -130,8 +130,12 @@ function [opt, e_min, best_errs] = octave_opt_ap(w_start, w_end, w_points_intern
             w, err(both1, err_weights),
             w, target1,
             w, err_weights)
-        legend('grd ref', 'opt', 'ref+opt', 'err', 'target', 'err weights')
+        legend('grd ref', 'opt', 'ref+opt', 'err', 'target', 'err weights     ', "location", "southeast")
+        %legend('grd ref', 'opt', 'ref+opt', 'err', 'target', 'err weights     ', "location", "southwest")
         title(sprintf("%s, mean err=%d", title_txt, e_min))
+        %title(sprintf("Stop & LP, 2nd order all-pass filters: %d", order))
+        xlabel("Normalized Frequency (pi rad/sample)")
+        ylabel("Group Delay")
         grid on
         waitfor(h)
     endif
